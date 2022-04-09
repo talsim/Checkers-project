@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Checkers</string>
+    <string name="login_text">Login</string>
+    <string name="settings_text">Settings</string>
+    <string name="waiting_room">Waiting Room</string>
+    <string name="scores">Scores</string>
+    <!--to toggle the open close button
+        of the navigation drawer-->
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
+</resources>
