@@ -32,7 +32,8 @@
         </activity>
         <activity
             android:name=".WaitingRoomActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
