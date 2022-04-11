@@ -9,11 +9,14 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -25,6 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import java.util.Objects;
 
 public class WaitingRoomActivity extends AppCompatActivity {
+    public static final String TAG = "WaitingRoom";
     protected Toolbar toolbar;
     protected DrawerLayout drawer;
     protected TextView mUsername;
@@ -46,7 +50,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView nav_view = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView nav_view = findViewById(R.id.nav_view);
         nav_view.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -66,7 +70,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     default:
                         throw new IllegalStateException("Unexpected value: " + item.getItemId());
                 }
-                return true;
+                return false; // return false means unchecked state
             }
         });
 
@@ -80,23 +84,18 @@ public class WaitingRoomActivity extends AppCompatActivity {
         String uid = Objects.requireNonNull(fAuth.getCurrentUser()).getUid(); // can't be null cuz we're already in WaitingRoom...
         DocumentReference documentReference = fStore.collection("users").document(uid);
 
-        documentReference.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
+        documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    System.err.println("Listen failed: " + e);
-                    return;
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    String username = task.getResult().getString("username");
+                    mUsername.setText(username);
+                    Log.d(TAG, "set username field in the navigation header to: " + username);
                 }
-
-                if (snapshot != null && snapshot.exists()) {
-                    System.out.println("Current data: " + snapshot.getData());
-                } else {
-                    System.out.print("Current data: null");
-                }
-                mUsername.setText(Objects.requireNonNull(snapshot).getString("username"));
+                else
+                    Log.d(TAG, "get() failed with: " + task.getException());
             }
         });
-
         mEmail.setText(Objects.requireNonNull(fAuth.getCurrentUser()).getEmail()); // again, can't be null...
     }
 
@@ -106,6 +105,13 @@ public class WaitingRoomActivity extends AppCompatActivity {
         if (drawer.isDrawerOpen(GravityCompat.START)){
             drawer.closeDrawer(GravityCompat.START);
         }
-        super.onBackPressed();
+        startActivity(new Intent(getApplicationContext(), StartGameActivity.class));
+        //super.onBackPressed(); // this disables back button by not calling the super function
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
     }
 }

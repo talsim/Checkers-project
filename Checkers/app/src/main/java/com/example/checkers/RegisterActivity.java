@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class RegisterActivity extends AppCompatActivity {
-    public static final String TAG = "DB";
+    public static final String TAG = "Register";
     protected TextView login;
     protected Button register;
     protected EditText mEmail;
