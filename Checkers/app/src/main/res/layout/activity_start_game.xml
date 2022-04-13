@@ -13,10 +13,10 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/score1"
+            android:id="@+id/scoreRed"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:layout_weight="1.5"
             android:gravity="start|center_vertical"
             android:text="0"
@@ -36,10 +36,10 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/score2"
+            android:id="@+id/scoreBlack"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"
             android:layout_weight="1.5"
             android:gravity="center_vertical|end"
             android:text="0"
@@ -48,6 +48,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <!-- The actual the board layout (matrix 8x8) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="360dp"
@@ -61,21 +62,21 @@
             android:orientation="horizontal">
 
             <FrameLayout
-                android:id="@+id/FrameLayout81"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square81"
+                    android:id="@+id/square00"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
+                <!-- This ImageView (circle) will be for example a red or black piece -->
                 <ImageView
-                    android:id="@+id/circle81"
+                    android:id="@+id/circle00"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -83,28 +84,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square82"
+                android:id="@+id/square01"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout83"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square83"
+                    android:id="@+id/square02"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle83"
+                    android:id="@+id/circle02"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -112,28 +112,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square84"
+                android:id="@+id/square03"
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout85"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square85"
+                    android:id="@+id/square04"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle85"
+                    android:id="@+id/circle04"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -141,28 +140,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square86"
+                android:id="@+id/square05"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout87"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square87"
+                    android:id="@+id/square06"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle87"
+                    android:id="@+id/circle06"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -170,16 +168,12 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square88"
+                android:id="@+id/square07"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
-
-            <!-- Set image or background here -->
-            <!-- Repeat the ImageView 7 times and change the id for every ImageView
-                 you create -->
         </LinearLayout>
 
         <LinearLayout
@@ -189,28 +183,27 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/square71"
+                android:id="@+id/square10"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout72"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square72"
+                    android:id="@+id/square11"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle72"
+                    android:id="@+id/circle11"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -218,28 +211,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square73"
+                android:id="@+id/square12"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout74"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square74"
+                    android:id="@+id/square13"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle74"
+                    android:id="@+id/circle13"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -247,28 +239,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square75"
+                android:id="@+id/square14"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout76"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square76"
+                    android:id="@+id/square15"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle76"
+                    android:id="@+id/circle15"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -276,28 +267,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square77"
+                android:id="@+id/square16"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout78"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square78"
+                    android:id="@+id/square17"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle78"
+                    android:id="@+id/circle17"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -312,21 +302,20 @@
             android:orientation="horizontal">
 
             <FrameLayout
-                android:id="@+id/FrameLayout61"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square61"
+                    android:id="@+id/square20"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle61"
+                    android:id="@+id/circle20"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -334,28 +323,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square62"
+                android:id="@+id/square21"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout63"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square63"
+                    android:id="@+id/square22"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle63"
+                    android:id="@+id/circle22"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -363,28 +351,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square64"
+                android:id="@+id/square23"
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout65"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square65"
+                    android:id="@+id/square24"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle65"
+                    android:id="@+id/circle24"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -392,28 +379,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square66"
+                android:id="@+id/square25"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout67"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square67"
+                    android:id="@+id/square26"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle67"
+                    android:id="@+id/circle26"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -421,11 +407,11 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square68"
+                android:id="@+id/square27"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
         </LinearLayout>
 
         <LinearLayout
@@ -435,28 +421,27 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/square51"
+                android:id="@+id/square30"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout52"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square52"
+                    android:id="@+id/square31"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle52"
+                    android:id="@+id/circle31"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -464,28 +449,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square53"
+                android:id="@+id/square32"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout54"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square54"
+                    android:id="@+id/square33"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle54"
+                    android:id="@+id/circle33"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -493,28 +477,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square55"
+                android:id="@+id/square34"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout56"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square56"
+                    android:id="@+id/square35"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle56"
+                    android:id="@+id/circle35"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -522,28 +505,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square57"
+                android:id="@+id/square36"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout58"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square58"
+                    android:id="@+id/square37"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle58"
+                    android:id="@+id/circle37"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -558,21 +540,20 @@
             android:orientation="horizontal">
 
             <FrameLayout
-                android:id="@+id/FrameLayout41"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square41"
+                    android:id="@+id/square40"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle41"
+                    android:id="@+id/circle40"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -580,28 +561,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square42"
+                android:id="@+id/square41"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout43"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square43"
+                    android:id="@+id/square42"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle43"
+                    android:id="@+id/circle42"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -609,28 +589,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square44"
+                android:id="@+id/square43"
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout45"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square45"
+                    android:id="@+id/square44"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle45"
+                    android:id="@+id/circle44"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -638,28 +617,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square46"
+                android:id="@+id/square45"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout47"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square47"
+                    android:id="@+id/square46"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle47"
+                    android:id="@+id/circle46"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -667,11 +645,11 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square48"
+                android:id="@+id/square47"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
         </LinearLayout>
 
         <LinearLayout
@@ -681,28 +659,27 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/square31"
+                android:id="@+id/square50"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout32"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square32"
+                    android:id="@+id/square51"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle32"
+                    android:id="@+id/circle51"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -710,28 +687,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square33"
+                android:id="@+id/square52"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout34"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square34"
+                    android:id="@+id/square53"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle34"
+                    android:id="@+id/circle53"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -739,28 +715,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square35"
+                android:id="@+id/square54"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout36"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square36"
+                    android:id="@+id/square55"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle36"
+                    android:id="@+id/circle55"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -768,28 +743,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square37"
+                android:id="@+id/square56"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout38"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square38"
+                    android:id="@+id/square57"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle38"
+                    android:id="@+id/circle57"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -804,21 +778,20 @@
             android:orientation="horizontal">
 
             <FrameLayout
-                android:id="@+id/FrameLayout21"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square21"
+                    android:id="@+id/square60"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle21"
+                    android:id="@+id/circle60"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -826,28 +799,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square22"
+                android:id="@+id/square61"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout23"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square23"
+                    android:id="@+id/square62"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle23"
+                    android:id="@+id/circle62"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -855,28 +827,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square24"
+                android:id="@+id/square63"
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout25"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square25"
+                    android:id="@+id/square64"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle25"
+                    android:id="@+id/circle64"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -884,28 +855,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square26"
+                android:id="@+id/square65"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout27"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square27"
+                    android:id="@+id/square66"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle27"
+                    android:id="@+id/circle66"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -913,16 +883,11 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square28"
+                android:id="@+id/square67"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
-
-
-            <!-- Set image or background here -->
-            <!-- Repeat the ImageView 7 times and change the id for every ImageView
-                 you create -->
+                android:background="@drawable/lightwood" />
         </LinearLayout>
 
         <LinearLayout
@@ -932,28 +897,27 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/square11"
+                android:id="@+id/square70"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout12"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square12"
+                    android:id="@+id/square71"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle12"
+                    android:id="@+id/circle71"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -961,28 +925,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square13"
+                android:id="@+id/square72"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout14"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square14"
+                    android:id="@+id/square73"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle14"
+                    android:id="@+id/circle73"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -990,28 +953,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square15"
+                android:id="@+id/square74"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout16"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square16"
+                    android:id="@+id/square75"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle16"
+                    android:id="@+id/circle75"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -1019,28 +981,27 @@
             </FrameLayout>
 
             <ImageView
-                android:id="@+id/square17"
+                android:id="@+id/square76"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="@drawable/white" />
+                android:background="@drawable/lightwood" />
 
             <FrameLayout
-                android:id="@+id/FrameLayout18"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_gravity="center"
                 android:layout_weight="1">
 
                 <ImageView
-                    android:id="@+id/square18"
+                    android:id="@+id/square77"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/black" />
+                    android:background="@drawable/darkwood" />
 
                 <ImageView
-                    android:id="@+id/circle18"
+                    android:id="@+id/circle77"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
