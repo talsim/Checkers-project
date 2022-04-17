@@ -5,8 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
 
-import java.util.Objects;
-
 
 /*
  * RULES
@@ -37,7 +35,7 @@ import java.util.Objects;
 
 public class StartGameActivity extends AppCompatActivity {
 
-    protected ImageView[][] imageViews; // all the squares which will contain the actual pieces (it will be drawn over them)
+    protected ImageView[][] tiles; // all the squares which contains the actual pieces (it will be drawn over them)
     protected Board board;
 
     @Override
@@ -46,42 +44,45 @@ public class StartGameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_start_game);
 
         initImageViews();
+
+        board = new Board(tiles); // sets the board
+
     }
 
     private void initImageViews() {
-        imageViews = new ImageView[8][8];
+        tiles = new ImageView[Board.SIZE][Board.SIZE];
 
-        imageViews[0][0] = findViewById(R.id.circle00);
-        imageViews[0][2] = findViewById(R.id.circle02);
-        imageViews[0][4] = findViewById(R.id.circle04);
-        imageViews[0][6] = findViewById(R.id.circle06);
-        imageViews[1][1] = findViewById(R.id.circle11);
-        imageViews[1][3] = findViewById(R.id.circle13);
-        imageViews[1][5] = findViewById(R.id.circle15);
-        imageViews[1][7] = findViewById(R.id.circle17);
-        imageViews[2][0] = findViewById(R.id.circle20);
-        imageViews[2][2] = findViewById(R.id.circle22);
-        imageViews[2][4] = findViewById(R.id.circle24);
-        imageViews[2][6] = findViewById(R.id.circle26);
-        imageViews[3][1] = findViewById(R.id.circle31);
-        imageViews[3][3] = findViewById(R.id.circle33);
-        imageViews[3][5] = findViewById(R.id.circle35);
-        imageViews[3][7] = findViewById(R.id.circle37);
-        imageViews[4][0] = findViewById(R.id.circle40);
-        imageViews[4][2] = findViewById(R.id.circle42);
-        imageViews[4][4] = findViewById(R.id.circle44);
-        imageViews[4][6] = findViewById(R.id.circle46);
-        imageViews[5][1] = findViewById(R.id.circle51);
-        imageViews[5][3] = findViewById(R.id.circle53);
-        imageViews[5][5] = findViewById(R.id.circle55);
-        imageViews[5][7] = findViewById(R.id.circle57);
-        imageViews[6][0] = findViewById(R.id.circle60);
-        imageViews[6][2] = findViewById(R.id.circle62);
-        imageViews[6][4] = findViewById(R.id.circle64);
-        imageViews[6][6] = findViewById(R.id.circle66);
-        imageViews[7][1] = findViewById(R.id.circle71);
-        imageViews[7][3] = findViewById(R.id.circle73);
-        imageViews[7][5] = findViewById(R.id.circle75);
-        imageViews[7][7] = findViewById(R.id.circle77);
+        tiles[0][1] = findViewById(R.id.circle01);
+        tiles[0][3] = findViewById(R.id.circle03);
+        tiles[0][5] = findViewById(R.id.circle05);
+        tiles[0][7] = findViewById(R.id.circle07);
+        tiles[1][0] = findViewById(R.id.circle10);
+        tiles[1][2] = findViewById(R.id.circle12);
+        tiles[1][4] = findViewById(R.id.circle14);
+        tiles[1][6] = findViewById(R.id.circle16);
+        tiles[2][1] = findViewById(R.id.circle21);
+        tiles[2][3] = findViewById(R.id.circle23);
+        tiles[2][5] = findViewById(R.id.circle25);
+        tiles[2][7] = findViewById(R.id.circle27);
+        tiles[3][0] = findViewById(R.id.circle30);
+        tiles[3][2] = findViewById(R.id.circle32);
+        tiles[3][4] = findViewById(R.id.circle34);
+        tiles[3][6] = findViewById(R.id.circle36);
+        tiles[4][1] = findViewById(R.id.circle41);
+        tiles[4][3] = findViewById(R.id.circle43);
+        tiles[4][5] = findViewById(R.id.circle45);
+        tiles[4][7] = findViewById(R.id.circle47);
+        tiles[5][0] = findViewById(R.id.circle50);
+        tiles[5][2] = findViewById(R.id.circle52);
+        tiles[5][4] = findViewById(R.id.circle54);
+        tiles[5][6] = findViewById(R.id.circle56);
+        tiles[6][1] = findViewById(R.id.circle61);
+        tiles[6][3] = findViewById(R.id.circle63);
+        tiles[6][5] = findViewById(R.id.circle65);
+        tiles[6][7] = findViewById(R.id.circle67);
+        tiles[7][0] = findViewById(R.id.circle70);
+        tiles[7][2] = findViewById(R.id.circle72);
+        tiles[7][4] = findViewById(R.id.circle74);
+        tiles[7][6] = findViewById(R.id.circle76);
     }
 }
