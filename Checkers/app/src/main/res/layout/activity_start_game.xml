@@ -84,8 +84,8 @@
                 <!-- This ImageView (circle) will be for example a red or black piece -->
                 <ImageView
                     android:id="@+id/circle01"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -113,8 +113,8 @@
 
                 <ImageView
                     android:id="@+id/circle03"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -143,8 +143,8 @@
 
                 <ImageView
                     android:id="@+id/circle05"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -180,8 +180,8 @@
 
                 <ImageView
                     android:id="@+id/circle07"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -209,8 +209,8 @@
 
                 <ImageView
                     android:id="@+id/circle10"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -238,8 +238,8 @@
 
                 <ImageView
                     android:id="@+id/circle12"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -267,8 +267,8 @@
 
                 <ImageView
                     android:id="@+id/circle14"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
 
@@ -296,8 +296,8 @@
 
                 <ImageView
                     android:id="@+id/circle16"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -339,8 +339,8 @@
 
                 <ImageView
                     android:id="@+id/circle21"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -369,8 +369,8 @@
 
                 <ImageView
                     android:id="@+id/circle23"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -399,8 +399,8 @@
 
                 <ImageView
                     android:id="@+id/circle25"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -428,8 +428,8 @@
 
                 <ImageView
                     android:id="@+id/circle27"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -456,8 +456,8 @@
 
                 <ImageView
                     android:id="@+id/circle30"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -485,8 +485,8 @@
 
                 <ImageView
                     android:id="@+id/circle32"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -514,8 +514,8 @@
 
                 <ImageView
                     android:id="@+id/circle34"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -543,8 +543,8 @@
 
                 <ImageView
                     android:id="@+id/circle36"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -589,8 +589,8 @@
 
                 <ImageView
                     android:id="@+id/circle41"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -619,8 +619,8 @@
 
                 <ImageView
                     android:id="@+id/circle43"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -648,8 +648,8 @@
 
                 <ImageView
                     android:id="@+id/circle45"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -678,8 +678,8 @@
 
                 <ImageView
                     android:id="@+id/circle47"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -706,8 +706,8 @@
 
                 <ImageView
                     android:id="@+id/circle50"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -735,8 +735,8 @@
 
                 <ImageView
                     android:id="@+id/circle52"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -764,8 +764,8 @@
 
                 <ImageView
                     android:id="@+id/circle54"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -793,8 +793,8 @@
 
                 <ImageView
                     android:id="@+id/circle56"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -840,8 +840,8 @@
 
                 <ImageView
                     android:id="@+id/circle61"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -870,8 +870,8 @@
 
                 <ImageView
                     android:id="@+id/circle63"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -899,8 +899,8 @@
 
                 <ImageView
                     android:id="@+id/circle65"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -929,8 +929,8 @@
 
                 <ImageView
                     android:id="@+id/circle67"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -957,8 +957,8 @@
 
                 <ImageView
                     android:id="@+id/circle70"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -985,8 +985,8 @@
 
                 <ImageView
                     android:id="@+id/circle72"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
 
@@ -1015,8 +1015,8 @@
 
                 <ImageView
                     android:id="@+id/circle74"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>
@@ -1044,8 +1044,8 @@
 
                 <ImageView
                     android:id="@+id/circle76"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_weight="1" />
             </FrameLayout>

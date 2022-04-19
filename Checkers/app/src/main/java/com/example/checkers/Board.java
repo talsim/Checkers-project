@@ -17,13 +17,21 @@ public class Board {
     public void drawPiecesOnTiles() {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
+                // red pieces
                 if (x <= 2 && isTileForChecker(x, y))
-                    tiles[x][y].setImageResource(R.drawable.red_piece);
+                    this.tiles[x][y].setImageResource(R.drawable.red_piece);
+                // black pieces
                 if (x >= 5 && isTileForChecker(x, y))
-                    tiles[x][y].setImageResource(R.drawable.black_piece);
+                    this.tiles[x][y].setImageResource(R.drawable.black_piece);
             }
         }
     }
+
+    public ImageView[][] getTiles()
+    {
+        return this.tiles;
+    }
+
 
     /**
      * Check if the given tile is darkwood colored or not (darkwood colored tile means that a checker can be placed on it).
