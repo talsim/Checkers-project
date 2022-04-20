@@ -15,13 +15,13 @@ public class Move {
         this.endY = endY;
     }
 
-    public void performMove() {
-        ImageView currPos = this.board.getTiles()[this.startX][this.startY];
-        ImageView nextPos = this.board.getTiles()[this.endX][this.endY];
-        currPos.setImageResource(android.R.color.transparent);
-        currPos.setClickable(false);
-        nextPos.setImageResource(R.drawable.black_piece); // ################ CHANGE THIS TO DYNAMICALLY GET COLOR!!!!!!!!!!
-    }
+//    public void performMove() {
+//        ImageView currPos = this.board.getTiles()[this.startX][this.startY];
+//        ImageView nextPos = this.board.getTiles()[this.endX][this.endY];
+//        currPos.setImageResource(android.R.color.transparent);
+//        currPos.setClickable(false);
+//        nextPos.setImageResource(R.drawable.black_piece); // ################ CHANGE THIS TO DYNAMICALLY GET COLOR!!!!!!!!!!
+//    }
 
     public int getStartX() {
         return startX;

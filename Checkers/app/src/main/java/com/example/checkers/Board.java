@@ -2,36 +2,29 @@ package com.example.checkers;
 
 import android.widget.ImageView;
 
+
 public class Board {
 
     public static final int SIZE = 8; // Board must be square-shaped (default is 8x8)
-    protected ImageView[][] tiles;
+    protected Piece[][] boardArray;
 
-    public Board(ImageView[][] tiles) {
-        this.tiles = tiles;
-
-        drawPiecesOnTiles();
+    public Board(Piece[][] boardArray) {
+        this.boardArray = boardArray;
     }
 
-    // Responsible for drawing the pieces on the board
-    public void drawPiecesOnTiles() {
-        for (int x = 0; x < Board.SIZE; x++) {
-            for (int y = 0; y < Board.SIZE; y++) {
-                // red pieces
-                if (x <= 2 && isTileForChecker(x, y))
-                    this.tiles[x][y].setImageResource(R.drawable.red_piece);
-                // black pieces
-                if (x >= 5 && isTileForChecker(x, y))
-                    this.tiles[x][y].setImageResource(R.drawable.black_piece);
-            }
-        }
+//    public Board(ImageView[][] imageViewsTiles)
+//    {
+//        this(imageViewsTiles, null);
+//    }
+
+
+    public Piece[][] getBoardArray() {
+        return this.boardArray;
     }
 
-    public ImageView[][] getTiles()
-    {
-        return this.tiles;
+    public void setBoardArray(Piece[][] boardArray) {
+        this.boardArray = boardArray;
     }
-
 
     /**
      * Check if the given tile is darkwood colored or not (darkwood colored tile means that a checker can be placed on it).
