@@ -5,10 +5,10 @@ import android.widget.ImageView;
 // class that defines a simple move on the board
 public class Move {
     private int startX, startY, endX, endY;
-    private Board board;
 
-    public Move(Board board, int startX, int startY, int endX, int endY) {
-        this.board = board;
+
+    public Move(int startX, int startY, int endX, int endY) {
+
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
@@ -22,6 +22,18 @@ public class Move {
 //        currPos.setClickable(false);
 //        nextPos.setImageResource(R.drawable.black_piece); // ################ CHANGE THIS TO DYNAMICALLY GET COLOR!!!!!!!!!!
 //    }
+
+
+    public void perform(boolean isBlack)
+    {
+        StartGameActivity.imageViewsTiles[this.startX][this.startY].setImageResource(android.R.color.transparent);
+        StartGameActivity.imageViewsTiles[this.startX][this.startY].setClickable(false);
+        if (isBlack)
+            StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_piece);
+        else
+            StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_piece);
+    }
+
 
     public int getStartX() {
         return startX;

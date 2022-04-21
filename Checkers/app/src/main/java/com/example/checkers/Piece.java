@@ -21,8 +21,8 @@ public class Piece {
         return image;
     }
 
-    public void setImage(ImageView image) {
-        this.image = image;
+    public void setImage(int imageID) {
+        this.image.setImageResource(imageID);
     }
 
     public int getX() {
