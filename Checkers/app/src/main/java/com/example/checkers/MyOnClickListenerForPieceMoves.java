@@ -1,6 +1,5 @@
 package com.example.checkers;
 
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -14,7 +13,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
     public MyOnClickListenerForPieceMoves(Piece piece, Board board) {
         this.piece = piece;
         this.board = board;
-        lastUsedImageViews = new ImageView[4]; //  ################### CHANGE THE SIZE OF THE ARRAY ACCORDING TO THE AMOUNT OF setOnClickListeners YOU HAVE!!!!!!!!!!!#############
+        lastUsedImageViews = new ImageView[2]; //  ################### CHANGE THE SIZE OF THE ARRAY ACCORDING TO THE AMOUNT OF setOnClickListeners YOU HAVE!!!!!!!!!!!#############
     }
 
     @Override
@@ -26,7 +25,6 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
 
         clearPossibleLocationMarkers();
         unsetOnClickLastImageViews();
-
 
         // for black
         if (isBlack) {
