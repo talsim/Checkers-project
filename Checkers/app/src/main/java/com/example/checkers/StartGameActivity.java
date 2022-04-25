@@ -36,7 +36,7 @@ import android.widget.ImageView;
 
 public class StartGameActivity extends AppCompatActivity {
 
-    public static final ImageView[][] imageViewsTiles = new ImageView[Board.SIZE][Board.SIZE];; // all the squares which contain the actual pieces (reference from the xml)
+    public static final ImageView[][] imageViewsTiles = new ImageView[Board.SIZE][Board.SIZE]; // all the squares which contain the actual pieces (reference from the xml)
     protected Board board;
 
 
@@ -52,47 +52,6 @@ public class StartGameActivity extends AppCompatActivity {
 
         setOnClickForPieces();
 
-
-//        for (int x = 0; x < Board.SIZE; x++) {
-//            for (int y = 0; y < Board.SIZE; y++) {
-//                if (board.isTileForChecker(x, y)) {
-//                    /*
-//                    1. implement onClick movement for black
-//                    NOT USEFUL! 1.1. check with isTileForChecker if the x and y axis represent a possible checker tile (darkwood colored)
-//                    1.2. if piece is NOT on edge (y > 0  && y < 7), then it can move upwards with making sure that moving diagonally by doing the following: going upwards -> (endX == startX+1) AND left or right -> (endY == startY-1 || endY-1 == startY)
-//                    1.3. if piece is on edge, then find out what edge (left or right) by doing (y == 0) for left OR (y == 7) for right
-//                    1.4. if piece is on left edge, then check that it moves to a higher row ofc (endX == startX+1), and also to (endY == 1)
-//                    1.5. if piece is on right edge, then check that it moves also to higher row, and also to (endY == 6)
-//                    1.6. DONE! :]
-//                     */
-//
-//                    int X = x;
-//                    int Y = y;
-//                    // for black only
-//                    if (x >= 5) {
-//                        board.getImageViewsTiles()[x][y].setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//
-//                                if (Y > 0 && Y < 7) { // if !isOnEdge
-//                                    // left side
-//                                    Move left = new Move(board, X, Y, X - 1, Y - 1);
-//                                    board.getImageViewsTiles()[X - 1][Y - 1].setImageResource(R.drawable.possible_location_marker);
-//                                    board.getImageViewsTiles()[X - 1][Y - 1].setClickable(true);
-//                                    board.getImageViewsTiles()[X - 1][Y - 1].setOnClickListener(new View.OnClickListener() {
-//                                        @Override
-//                                        public void onClick(View v) {
-//                                            // now just perform the move to the left side
-//                                            left.performMove();
-//                                        }
-//                                    });
-//                                }
-//                            }
-//                        });
-//                    }
-//                }
-//            }
-//        }
 
     }
 

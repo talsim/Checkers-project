@@ -6,7 +6,6 @@ import android.widget.ImageView;
 public class Move {
     private int startX, startY, endX, endY;
 
-
     public Move(int startX, int startY, int endX, int endY) {
 
         this.startX = startX;
@@ -15,23 +14,20 @@ public class Move {
         this.endY = endY;
     }
 
-//    public void performMove() {
-//        ImageView currPos = this.board.getTiles()[this.startX][this.startY];
-//        ImageView nextPos = this.board.getTiles()[this.endX][this.endY];
-//        currPos.setImageResource(android.R.color.transparent);
-//        currPos.setClickable(false);
-//        nextPos.setImageResource(R.drawable.black_piece); // ################ CHANGE THIS TO DYNAMICALLY GET COLOR!!!!!!!!!!
-//    }
-
-
-    public void perform(boolean isBlack)
+    public void perform(boolean isBlack, boolean isKing)
     {
         StartGameActivity.imageViewsTiles[this.startX][this.startY].setImageResource(android.R.color.transparent);
         StartGameActivity.imageViewsTiles[this.startX][this.startY].setClickable(false);
         if (isBlack)
-            StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_piece);
+            if (isKing)
+                StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_king);
+            else
+                StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_piece);
         else
-            StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_piece);
+            if (isKing)
+                StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_king);
+            else
+                StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_piece);
     }
 
 

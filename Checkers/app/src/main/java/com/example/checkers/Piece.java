@@ -4,17 +4,26 @@ import android.widget.ImageView;
 
 public class Piece {
 
-    private ImageView image;
+    private final ImageView image;
     private int x;
     private int y;
     private boolean isKing;
     private boolean isBlack; // color-wise
+
+    public Piece(ImageView image, int x, int y, boolean isBlack, boolean isKing) {
+        this.image = image;
+        this.x = x;
+        this.y = y;
+        this.isBlack = isBlack;
+        this.isKing = isKing;
+    }
 
     public Piece(ImageView image, int x, int y, boolean isBlack) {
         this.image = image;
         this.x = x;
         this.y = y;
         this.isBlack = isBlack;
+        this.isKing = false;
     }
 
     public ImageView getImage() {
@@ -45,8 +54,8 @@ public class Piece {
         return this.isKing;
     }
 
-    public void setKing(boolean king) {
-        isKing = king;
+    public void setKing() {
+        isKing = true;
     }
 
     public boolean isBlack() {

@@ -3,13 +3,16 @@ package com.example.checkers;
 public class Logic {
 
     public Logic(){
-        // TODO: implement Constructor
+
     }
 
 
-    public int getPossibleMoves() {
-        // TODO: return all possible moves that the player can do
-        return 0;
+    public static boolean isBlackNeeds2BeKing(int x){
+        return x == 0;
+    }
+
+    public static boolean isRedNeeds2BeKing(int x){
+        return x == 7;
     }
 
     public static boolean isOnRightEdge(int y){
@@ -20,7 +23,11 @@ public class Logic {
         return y == 0;
     }
 
-    public static boolean canBlackMove(int x)
+    public static boolean canRedMoveDown(int x) {
+        return x + 1 <= 7; // check if red reached the end (already king)
+    }
+
+    public static boolean canBlackMoveUp(int x)
     {
         return x - 1 >= 0; // check if black reached the end (already king)
     }
@@ -29,8 +36,6 @@ public class Logic {
     {
         return board.getBoardArray()[x][y] == null;
     }
-
-
 
     /**
      * Check if the given tile is darkwood colored or not (darkwood colored tile means that a checker can be placed on it).
