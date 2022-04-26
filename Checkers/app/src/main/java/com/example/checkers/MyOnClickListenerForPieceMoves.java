@@ -29,178 +29,203 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         clearPossibleLocationMarkers();
         unsetOnClickLastImageViews();
 
-        if (isBlackTurn)
-            Log.d(TAG, "BLACK TURN");
-        else
-            Log.d(TAG, "RED TURN");
-        Log.d(TAG, "isBlack = " + isBlack + ";    isKing = " + isKing + ";");
         // for black
-        if ((isBlack || isKing) && isBlackTurn) {
-            if (!isBlack && isBlackTurn) // if color is red and it is black's turn, just return. (it happens when the red becomes king)
-                return;
-            highlightPiece(isBlack, isKing, pieceImage);
-            Log.d(TAG, "IN BLACK");
-            /* -------------------------- left diagonal -------------------------- */
-            if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
-                Move leftMove = new Move(x, y, x - 1, y - 1);
-                ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x - 1][y - 1];
-                lastUsedImageViews[0] = leftPieceImage;
-                leftPieceImage.setImageResource(R.drawable.possible_location_marker);
-                leftPieceImage.setClickable(true);
-                leftPieceImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int endX = leftMove.getEndX();
-                        int endY = leftMove.getEndY();
-                        leftMove.perform(isBlack, Logic.isBlackNeeds2BeKing(endX));
+        if (isBlack && isBlackTurn) {
+            highlightPiece(true, isKing, pieceImage);
+            if (!isKing) {
+                /* -------------------------- left diagonal -------------------------- */
+                if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
+                    ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x - 1][y - 1];
+                    lastUsedImageViews[0] = leftPieceImage;
+                    Move leftMove = new Move(x, y, x - 1, y - 1);
+                    leftDiagonal(leftMove, leftPieceImage, true, false);
+                }
 
-                        // updating boardArray
-                        board.getBoardArray()[endX][endY] = new Piece(leftPieceImage, endX, endY, isBlack, isKing);
-                        board.getBoardArray()[x][y] = null; // remove old piece
-                        clearPossibleLocationMarkers();
-                        unsetOnClickLastImageViews();
+                /* -------------------------- left-JUMP diagonal -------------------------- */
 
-                        // check if needs to be king
-                        if (Logic.isBlackNeeds2BeKing(endX))
-                            board.getBoardArray()[endX][endY].setKing();
 
-                        // set onClick for the new piece (location)
-                        leftPieceImage.setClickable(true);
-                        leftPieceImage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), leftPieceImage); // recursively show more move options
-                            }
-                        });
+                /* -------------------------- right diagonal -------------------------- */
+                if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
+                    Move rightMove = new Move(x, y, x - 1, y + 1);
+                    ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x - 1][y + 1];
+                    lastUsedImageViews[1] = rightPieceImage;
+                    rightDiagonal(rightMove, rightPieceImage, true, false);
+                }
 
-                        // pass the turn to the other player
-                        isBlackTurn = false;
-                    }
-                });
+                /* -------------------------- right-JUMP diagonal -------------------------- */
+
             }
-
-            /* -------------------------- right diagonal -------------------------- */
-            if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
-                Move rightMove = new Move(x, y, x - 1, y + 1);
-                ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x - 1][y + 1];
-                lastUsedImageViews[1] = rightPieceImage;
-                rightPieceImage.setImageResource(R.drawable.possible_location_marker);
-                rightPieceImage.setClickable(true);
-                rightPieceImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int endX = rightMove.getEndX();
-                        int endY = rightMove.getEndY();
-                        rightMove.perform(isBlack, Logic.isBlackNeeds2BeKing(endX));
-
-                        // updating boardArray
-                        board.getBoardArray()[endX][endY] = new Piece(rightPieceImage, endX, endY, isBlack, isKing);
-                        board.getBoardArray()[x][y] = null; // remove old piece
-                        clearPossibleLocationMarkers();
-                        unsetOnClickLastImageViews();
-
-                        // check if needs to be king
-                        if (Logic.isBlackNeeds2BeKing(endX))
-                            board.getBoardArray()[endX][endY].setKing();
-
-
-                        // set onClick for the new piece (location)
-                        rightPieceImage.setClickable(true);
-                        rightPieceImage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), rightPieceImage); // recursively show more move options
-                            }
-                        });
-
-                        // pass the turn to the other player
-                        isBlackTurn = false;
-                    }
-                });
-            }
+            else
+                blackKingMove(x, y);
         }
         // for red
-        if ((!isBlack || isKing) && !isBlackTurn) {
-            if (isBlack && !isBlackTurn)  // if color is black and it is red's turn, just return. (it happens when the black becomes king)
-                return;
-            highlightPiece(isBlack, isKing, pieceImage);
-            /* -------------------------- left diagonal -------------------------- */
-            if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
-                Move leftMove = new Move(x, y, x + 1, y - 1);
-                ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x + 1][y - 1];
-                lastUsedImageViews[2] = leftPieceImage;
-                leftPieceImage.setImageResource(R.drawable.possible_location_marker);
-                leftPieceImage.setClickable(true);
-                leftPieceImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int endX = leftMove.getEndX();
-                        int endY = leftMove.getEndY();
-                        leftMove.perform(isBlack, Logic.isRedNeeds2BeKing(endX));
+        else if (!isBlack && !isBlackTurn){
+            highlightPiece(false, isKing, pieceImage);
+            if (!isKing) {
+                /* -------------------------- left diagonal -------------------------- */
+                if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
+                    Move leftMove = new Move(x, y, x + 1, y - 1);
+                    ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x + 1][y - 1];
+                    lastUsedImageViews[2] = leftPieceImage;
+                    leftDiagonal(leftMove, leftPieceImage, false, false);
+                }
 
-                        // updating boardArray
-                        board.getBoardArray()[endX][endY] = new Piece(leftPieceImage, endX, endY, isBlack, isKing);
-                        board.getBoardArray()[x][y] = null; // remove old piece
-                        clearPossibleLocationMarkers();
-                        unsetOnClickLastImageViews();
+                /* -------------------------- left-JUMP diagonal -------------------------- */
 
-                        // check if needs to be king
-                        if (Logic.isRedNeeds2BeKing(endX))
-                            board.getBoardArray()[endX][endY].setKing();
 
-                        // set onClick for the new piece (location)
-                        leftPieceImage.setClickable(true);
-                        leftPieceImage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), leftPieceImage); // recursively show more move options
-                            }
-                        });
+                /* -------------------------- right diagonal -------------------------- */
+                if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
+                    Move rightMove = new Move(x, y, x + 1, y + 1);
+                    ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x + 1][y + 1];
+                    lastUsedImageViews[3] = rightPieceImage;
+                    rightDiagonal(rightMove, rightPieceImage, false, false);
+                }
 
-                        // pass the turn to the other player
-                        isBlackTurn = true;
-                    }
-                });
+                /* -------------------------- right-JUMP diagonal -------------------------- */
+
             }
-            /* -------------------------- right diagonal -------------------------- */
-            if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
-                Move rightMove = new Move(x, y, x + 1, y + 1);
-                ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x + 1][y + 1];
-                lastUsedImageViews[3] = rightPieceImage;
-                rightPieceImage.setImageResource(R.drawable.possible_location_marker);
+            else
+                redKingMove(x, y);
+        }
+    }
+
+    private void blackKingMove(int x, int y)
+    {
+        /* -------------------------- left diagonal BLACK -------------------------- */
+        if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
+            ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x - 1][y - 1];
+            lastUsedImageViews[0] = leftPieceImage;
+            Move leftMove = new Move(x, y, x - 1, y - 1);
+            leftDiagonal(leftMove, leftPieceImage, true, true);
+        }
+
+        /* -------------------------- right diagonal BLACK -------------------------- */
+        if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
+            Move rightMove = new Move(x, y, x - 1, y + 1);
+            ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x - 1][y + 1];
+            lastUsedImageViews[1] = rightPieceImage;
+            rightDiagonal(rightMove, rightPieceImage, true, true);
+        }
+
+        /* -------------------------- left diagonal RED -------------------------- */
+        if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
+            Move leftMove = new Move(x, y, x + 1, y - 1);
+            ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x + 1][y - 1];
+            lastUsedImageViews[2] = leftPieceImage;
+            leftDiagonal(leftMove, leftPieceImage, true, true);
+        }
+        /* -------------------------- right diagonal RED -------------------------- */
+        if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
+            Move rightMove = new Move(x, y, x + 1, y + 1);
+            ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x + 1][y + 1];
+            lastUsedImageViews[3] = rightPieceImage;
+            rightDiagonal(rightMove, rightPieceImage, true, true);
+        }
+    }
+
+    private void redKingMove(int x, int y)
+    {
+        /* -------------------------- left diagonal BLACK -------------------------- */
+        if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
+            ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x - 1][y - 1];
+            lastUsedImageViews[0] = leftPieceImage;
+            Move leftMove = new Move(x, y, x - 1, y - 1);
+            leftDiagonal(leftMove, leftPieceImage, false, true);
+        }
+
+        /* -------------------------- right diagonal BLACK -------------------------- */
+        if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
+            Move rightMove = new Move(x, y, x - 1, y + 1);
+            ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x - 1][y + 1];
+            lastUsedImageViews[1] = rightPieceImage;
+            rightDiagonal(rightMove, rightPieceImage, false, true);
+        }
+
+        /* -------------------------- left diagonal RED -------------------------- */
+        if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
+            Move leftMove = new Move(x, y, x + 1, y - 1);
+            ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x + 1][y - 1];
+            lastUsedImageViews[2] = leftPieceImage;
+            leftDiagonal(leftMove, leftPieceImage, false, true);
+        }
+        /* -------------------------- right diagonal RED -------------------------- */
+        if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
+            Move rightMove = new Move(x, y, x + 1, y + 1);
+            ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x + 1][y + 1];
+            lastUsedImageViews[3] = rightPieceImage;
+            rightDiagonal(rightMove, rightPieceImage, false, true);
+        }
+    }
+
+
+
+    private void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isKing){
+        rightPieceImage.setImageResource(R.drawable.possible_location_marker);
+        rightPieceImage.setClickable(true);
+        rightPieceImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int endX = rightMove.getEndX();
+                int endY = rightMove.getEndY();
+                rightMove.perform(isBlack, Logic.isBlackNeeds2BeKing(endX));
+
+                // updating boardArray
+                board.getBoardArray()[endX][endY] = new Piece(rightPieceImage, endX, endY, isBlack, isKing);
+                board.getBoardArray()[rightMove.getStartX()][rightMove.getStartY()] = null; // remove old piece
+                clearPossibleLocationMarkers();
+                unsetOnClickLastImageViews();
+
+                // check if needs to be king
+                if (Logic.isPieceNeeds2BeKing(isBlack, endX))
+                    board.getBoardArray()[endX][endY].setKing();
+
+
+                // set onClick for the new piece (location)
                 rightPieceImage.setClickable(true);
                 rightPieceImage.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        int endX = rightMove.getEndX();
-                        int endY = rightMove.getEndY();
-                        rightMove.perform(isBlack, Logic.isRedNeeds2BeKing(endX));
-
-                        // updating boardArray
-                        board.getBoardArray()[endX][endY] = new Piece(rightPieceImage, endX, endY, isBlack, isKing);
-                        board.getBoardArray()[x][y] = null; // remove old piece
-                        clearPossibleLocationMarkers();
-                        unsetOnClickLastImageViews();
-
-                        // check if needs to be king
-                        if (Logic.isRedNeeds2BeKing(endX))
-                            board.getBoardArray()[endX][endY].setKing();
-
-                        // set onClick for the new piece (location)
-                        rightPieceImage.setClickable(true);
-                        rightPieceImage.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), rightPieceImage); // recursively show more move options
-                            }
-                        });
-
-                        // pass the turn to the other player
-                        isBlackTurn = true;
+                        displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), rightPieceImage); // recursively show more move options
                     }
                 });
+                // pass the turn to the other player
+                isBlackTurn = !isBlack;
             }
-        }
+        });
+    }
+
+    private void leftDiagonal(Move leftMove, ImageView leftPieceImage, boolean isBlack, boolean isKing){
+        leftPieceImage.setImageResource(R.drawable.possible_location_marker);
+        leftPieceImage.setClickable(true);
+        leftPieceImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int endX = leftMove.getEndX();
+                int endY = leftMove.getEndY();
+                leftMove.perform(isBlack, isKing);
+
+                // updating boardArray
+                board.getBoardArray()[endX][endY] = new Piece(leftPieceImage, endX, endY, isBlack, isKing);
+                board.getBoardArray()[leftMove.getStartX()][leftMove.getStartY()] = null; // remove old piece
+                clearPossibleLocationMarkers();
+                unsetOnClickLastImageViews();
+
+                // check if needs to be king
+                if (Logic.isPieceNeeds2BeKing(isBlack, endX))
+                    board.getBoardArray()[endX][endY].setKing();
+
+                // set onClick for the new piece (location)
+                leftPieceImage.setClickable(true);
+                leftPieceImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), leftPieceImage); // recursively show more move options
+                    }
+                });
+                // pass the turn to the other player
+                isBlackTurn = !isBlack;
+            }
+        });
     }
 
     private void highlightPiece(boolean isBlack, boolean isKing, ImageView piece) {
@@ -262,6 +287,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         }
     }
 
+    // responsible for removing the setOnClickListeners that we set and the player did not choose to go, so there will not be hanging listeners.
     public void unsetOnClickLastImageViews() {
         // how to make sure that at the place of the image there isn't also a checkers piece:
         // 1. get id of image; extract X and Y axis from it
@@ -272,9 +298,9 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
             if (image != null) {
                 // get id of image and extract axis
                 String idStr = image.getResources().getResourceEntryName(image.getId());
-                String XAndY = idStr.substring(idStr.length() - 2);
-                int x = Character.getNumericValue(XAndY.charAt(0));
-                int y = Character.getNumericValue(XAndY.charAt(1));
+                String axis = idStr.substring(idStr.length() - 2);
+                int x = Character.getNumericValue(axis.charAt(0));
+                int y = Character.getNumericValue(axis.charAt(1));
 
 
                 if (board.getBoardArray()[x][y] == null) {

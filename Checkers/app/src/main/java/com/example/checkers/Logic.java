@@ -6,6 +6,11 @@ public class Logic {
 
     }
 
+    public static boolean isPieceNeeds2BeKing(boolean isBlack, int x) {
+        if (isBlack)
+            return isBlackNeeds2BeKing(x);
+        return isRedNeeds2BeKing(x);
+    }
 
     public static boolean isBlackNeeds2BeKing(int x){
         return x == 0;
