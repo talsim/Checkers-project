@@ -23,15 +23,10 @@ import android.widget.ImageView;
  * 5.	After a checker/king moves one space diagonally, the player's turn is
  * 		over.
  *
- * 6.	If an opponent's checker/king can be skipped, it must be skipped.
- *
- * 7.	If after a skip, the same checker can skip again, it must. Otherwise,
- * 		the turn is over.
- *
- * 8.	The game is over if a player either has no more checkers or cannot make
+ * 6.	The game is over if a player either has no more checkers or cannot make
  * 		a move on their turn.
  *
- * 9.	The player with the black checkers moves first.
+ * 7.	The player with the black checkers moves first.
  */
 
 public class StartGameActivity extends AppCompatActivity {
