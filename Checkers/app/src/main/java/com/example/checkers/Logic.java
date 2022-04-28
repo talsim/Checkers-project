@@ -37,13 +37,17 @@ public class Logic {
     }
 
     // if not on edge and has space to jump
-    public static boolean hasSpaceForLeftJump(int x, int y) {
-        return x - 2 >= 0 && y - 2 >= 0;
+    public static boolean hasSpaceForLeftJump(int x, int y, boolean isBlack) {
+        if (isBlack)
+            return x - 2 >= 0 && y - 2 >= 0;
+        return x + 2 <= 7 && y - 2 >= 0;
     }
 
     // if not on edge and has space to jump
-    public static boolean hasSpaceForRightJump(int x, int y) {
-        return x - 2 >= 0 && y + 2 <= 7;
+    public static boolean hasSpaceForRightJump(int x, int y, boolean isBlack) {
+        if(isBlack)
+            return x - 2 >= 0 && y + 2 <= 7;
+        return x + 2 <= 7 && y + 2 <= 7;
     }
 
     public static boolean isTileAvailable(Board board, int x, int y) {

@@ -17,7 +17,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         this.piece = piece;
         this.board = board;
         isBlackTurn = true;
-        lastUsedImageViews = new ImageView[6]; //  ################### CHANGE THE SIZE OF THE ARRAY ACCORDING TO THE AMOUNT OF setOnClickListeners YOU HAVE!!!!!!!!!!!#############
+        lastUsedImageViews = new ImageView[10];
     }
 
     @Override
@@ -39,15 +39,15 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                     ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x - 1][y - 1];
                     lastUsedImageViews[0] = leftPieceImage;
                     Move leftMove = new Move(x, y, x - 1, y - 1);
-                    leftDiagonal(leftMove, leftPieceImage, true, false, false);
+                    leftDiagonal(leftMove, leftPieceImage, true, false, false, 0);
                 }
 
                 /* -------------------------- left-JUMP diagonal -------------------------- */
-                if (Logic.hasSpaceForLeftJump(x, y) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack()) {
+                if (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack()) {
                     ImageView leftJumpPieceImage = StartGameActivity.imageViewsTiles[x - 2][y - 2];
                     lastUsedImageViews[1] = leftJumpPieceImage;
                     Move leftJumpMove = new Move(x, y, x - 2, y - 2);
-                    leftDiagonal(leftJumpMove, leftJumpPieceImage, true, false, true);
+                    leftDiagonal(leftJumpMove, leftJumpPieceImage, true, false, true, x - 1);
                 }
 
                 /* -------------------------- right diagonal -------------------------- */
@@ -55,15 +55,15 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                     Move rightMove = new Move(x, y, x - 1, y + 1);
                     ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x - 1][y + 1];
                     lastUsedImageViews[2] = rightPieceImage;
-                    rightDiagonal(rightMove, rightPieceImage, true, false, false);
+                    rightDiagonal(rightMove, rightPieceImage, true, false, false, 0);
                 }
 
                 /* -------------------------- right-JUMP diagonal -------------------------- */
-                if (Logic.hasSpaceForRightJump(x, y) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack()) {
+                if (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack()) {
                     ImageView rightJumpPieceImage = StartGameActivity.imageViewsTiles[x - 2][y + 2];
                     lastUsedImageViews[3] = rightJumpPieceImage;
                     Move rightJumpMove = new Move(x, y, x - 2, y + 2);
-                    rightDiagonal(rightJumpMove, rightJumpPieceImage, true, false, true);
+                    rightDiagonal(rightJumpMove, rightJumpPieceImage, true, false, true, x - 1);
                 }
             } else
                 kingMove(x, y, true);
@@ -77,21 +77,33 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                     Move leftMove = new Move(x, y, x + 1, y - 1);
                     ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x + 1][y - 1];
                     lastUsedImageViews[4] = leftPieceImage;
-                    leftDiagonal(leftMove, leftPieceImage, false, false, false);
+                    leftDiagonal(leftMove, leftPieceImage, false, false, false, 0);
                 }
 
                 /* -------------------------- left-JUMP diagonal -------------------------- */
 
+                if (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && board.getBoardArray()[x + 1][y - 1].isBlack()) {
+                    ImageView leftJumpPieceImage = StartGameActivity.imageViewsTiles[x + 2][y - 2];
+                    lastUsedImageViews[5] = leftJumpPieceImage;
+                    Move leftJumpMove = new Move(x, y, x + 2, y - 2);
+                    leftDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
+                }
 
                 /* -------------------------- right diagonal -------------------------- */
                 if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
                     Move rightMove = new Move(x, y, x + 1, y + 1);
                     ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x + 1][y + 1];
-                    lastUsedImageViews[5] = rightPieceImage;
-                    rightDiagonal(rightMove, rightPieceImage, false, false, false);
+                    lastUsedImageViews[6] = rightPieceImage;
+                    rightDiagonal(rightMove, rightPieceImage, false, false, false, 0);
                 }
 
                 /* -------------------------- right-JUMP diagonal -------------------------- */
+                if (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && board.getBoardArray()[x + 1][y + 1].isBlack()) {
+                    ImageView leftJumpPieceImage = StartGameActivity.imageViewsTiles[x + 2][y + 2];
+                    lastUsedImageViews[7] = leftJumpPieceImage;
+                    Move leftJumpMove = new Move(x, y, x + 2, y + 2);
+                    rightDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
+                }
 
             } else
                 kingMove(x, y, false);
@@ -104,7 +116,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
             ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x - 1][y - 1];
             lastUsedImageViews[0] = leftPieceImage;
             Move leftMove = new Move(x, y, x - 1, y - 1);
-            leftDiagonal(leftMove, leftPieceImage, isBlack, true, false /* CHANGE */);
+            leftDiagonal(leftMove, leftPieceImage, isBlack, true, false, 0);
         }
 
         /* -------------------------- right diagonal BLACK -------------------------- */
@@ -112,26 +124,98 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
             Move rightMove = new Move(x, y, x - 1, y + 1);
             ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x - 1][y + 1];
             lastUsedImageViews[1] = rightPieceImage;
-            rightDiagonal(rightMove, rightPieceImage, isBlack, true, false  /* CHANGE */);
+            rightDiagonal(rightMove, rightPieceImage, isBlack, true, false, 0);
         }
+
+
 
         /* -------------------------- left diagonal RED -------------------------- */
         if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
             Move leftMove = new Move(x, y, x + 1, y - 1);
             ImageView leftPieceImage = StartGameActivity.imageViewsTiles[x + 1][y - 1];
             lastUsedImageViews[2] = leftPieceImage;
-            leftDiagonal(leftMove, leftPieceImage, isBlack, true, false /* CHANGE */);
+            leftDiagonal(leftMove, leftPieceImage, isBlack, true, false, 0);
         }
+
         /* -------------------------- right diagonal RED -------------------------- */
         if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
             Move rightMove = new Move(x, y, x + 1, y + 1);
             ImageView rightPieceImage = StartGameActivity.imageViewsTiles[x + 1][y + 1];
             lastUsedImageViews[3] = rightPieceImage;
-            rightDiagonal(rightMove, rightPieceImage, isBlack, true, false  /* CHANGE */);
+            rightDiagonal(rightMove, rightPieceImage, isBlack, true, false, 0);
+        }
+
+
+        if (isBlack) {
+            /* -------------------------- left-JUMP diagonal BLACK -------------------------- */
+            if (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && isCheckerBehindNeeds2BeRedOrBlack(isBlack, x - 1, y - 1)) {
+                ImageView leftJumpPieceImage = StartGameActivity.imageViewsTiles[x - 2][y - 2];
+                lastUsedImageViews[4] = leftJumpPieceImage;
+                Move leftJumpMove = new Move(x, y, x - 2, y - 2);
+                leftDiagonal(leftJumpMove, leftJumpPieceImage, true, true, true, x - 1);
+            }
+            /* -------------------------- right-JUMP diagonal BLACK -------------------------- */
+            if (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && isCheckerBehindNeeds2BeRedOrBlack(isBlack, x - 1, y + 1)) {
+                ImageView rightJumpPieceImage = StartGameActivity.imageViewsTiles[x - 2][y + 2];
+                lastUsedImageViews[5] = rightJumpPieceImage;
+                Move rightJumpMove = new Move(x, y, x - 2, y + 2);
+                rightDiagonal(rightJumpMove, rightJumpPieceImage, true, true, true, x - 1);
+            }
+            /* -------------------------- left-JUMP diagonal RED -------------------------- */
+            if (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && isCheckerBehindNeeds2BeRedOrBlack(isBlack, x + 1, y - 1)) {
+                ImageView leftJumpPieceImage = StartGameActivity.imageViewsTiles[x + 2][y - 2];
+                lastUsedImageViews[6] = leftJumpPieceImage;
+                Move leftJumpMove = new Move(x, y, x + 2, y - 2);
+                leftDiagonal(leftJumpMove, leftJumpPieceImage, true, true, true, x + 1);
+            }
+            /* -------------------------- right-JUMP diagonal RED -------------------------- */
+            if (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && isCheckerBehindNeeds2BeRedOrBlack(isBlack, x + 1, y + 1)) {
+                ImageView leftJumpPieceImage = StartGameActivity.imageViewsTiles[x + 2][y + 2];
+                lastUsedImageViews[7] = leftJumpPieceImage;
+                Move leftJumpMove = new Move(x, y, x + 2, y + 2);
+                rightDiagonal(leftJumpMove, leftJumpPieceImage, true, true, true, x + 1);
+            }
+        } else {
+            /* -------------------------- left-JUMP diagonal BLACK -------------------------- */
+            if (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && isCheckerBehindNeeds2BeRedOrBlack(isBlack, x - 1, y - 1)) {
+                ImageView leftJumpPieceImage = StartGameActivity.imageViewsTiles[x - 2][y - 2];
+                lastUsedImageViews[4] = leftJumpPieceImage;
+                Move leftJumpMove = new Move(x, y, x - 2, y - 2);
+                leftDiagonal(leftJumpMove, leftJumpPieceImage, false, true, true, x - 1);
+            }
+            /* -------------------------- right-JUMP diagonal BLACK -------------------------- */
+            if (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && isCheckerBehindNeeds2BeRedOrBlack(isBlack, x - 1, y + 1)) {
+                ImageView rightJumpPieceImage = StartGameActivity.imageViewsTiles[x - 2][y + 2];
+                lastUsedImageViews[5] = rightJumpPieceImage;
+                Move rightJumpMove = new Move(x, y, x - 2, y + 2);
+                rightDiagonal(rightJumpMove, rightJumpPieceImage, false, true, true, x - 1);
+            }
+            /* -------------------------- left-JUMP diagonal RED -------------------------- */
+            if (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && isCheckerBehindNeeds2BeRedOrBlack(isBlack, x + 1, y - 1)) {
+                ImageView leftJumpPieceImage = StartGameActivity.imageViewsTiles[x + 2][y - 2];
+                lastUsedImageViews[6] = leftJumpPieceImage;
+                Move leftJumpMove = new Move(x, y, x + 2, y - 2);
+                leftDiagonal(leftJumpMove, leftJumpPieceImage, false, true, true, x + 1);
+            }
+            /* -------------------------- right-JUMP diagonal RED -------------------------- */
+            if (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && isCheckerBehindNeeds2BeRedOrBlack(isBlack, x + 1, y + 1)) {
+                ImageView leftJumpPieceImage = StartGameActivity.imageViewsTiles[x + 2][y + 2];
+                lastUsedImageViews[7] = leftJumpPieceImage;
+                Move leftJumpMove = new Move(x, y, x + 2, y + 2);
+                rightDiagonal(leftJumpMove, leftJumpPieceImage, false, true, true, x + 1);
+            }
         }
     }
 
-    private void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isKing, boolean isJump) {
+    // only in the eating-checks we do, we need to check differently for black or red
+    private boolean isCheckerBehindNeeds2BeRedOrBlack(boolean isBlack, int x, int y) {
+        if (isBlack)
+            return !board.getBoardArray()[x][y].isBlack(); // check if there is red piece behind me
+        return board.getBoardArray()[x][y].isBlack(); // else, check if there is black piece behind me
+    }
+
+
+    private void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX) {
         rightPieceImage.setImageResource(R.drawable.possible_location_marker);
         rightPieceImage.setClickable(true);
         rightPieceImage.setOnClickListener(new View.OnClickListener() {
@@ -147,13 +231,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 board.getBoardArray()[endX][endY] = new Piece(rightPieceImage, endX, endY, isBlack, isKing);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
                 if (isJump) {
-                    int jumpedPieceX = 0;
-                    int jumpedPieceY = 0;
-                    if (isBlack)
-                        jumpedPieceX = startX - 1;
-                    else
-                        jumpedPieceX = startX + 1;
-                    jumpedPieceY = startY + 1;
+                    int jumpedPieceY = startY + 1;
 
                     // delete the jumped piece
                     StartGameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setImageResource(android.R.color.transparent);
@@ -182,7 +260,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         });
     }
 
-    private void leftDiagonal(Move leftMove, ImageView leftPieceImage, boolean isBlack, boolean isKing, boolean isJump) {
+    private void leftDiagonal(Move leftMove, ImageView leftPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX) {
         leftPieceImage.setImageResource(R.drawable.possible_location_marker);
         leftPieceImage.setClickable(true);
         leftPieceImage.setOnClickListener(new View.OnClickListener() {
@@ -198,13 +276,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 board.getBoardArray()[endX][endY] = new Piece(leftPieceImage, endX, endY, isBlack, isKing);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
                 if (isJump) {
-                    int jumpedPieceX = 0;
-                    int jumpedPieceY = 0;
-                    if (isBlack)
-                        jumpedPieceX = startX - 1;
-                    else
-                        jumpedPieceX = startX + 1;
-                    jumpedPieceY = startY - 1;
+                    int jumpedPieceY = startY - 1;
 
                     // delete the jumped piece
                     StartGameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setImageResource(android.R.color.transparent);
@@ -311,8 +383,6 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 }
             }
         }
-
-
     }
 }
 
