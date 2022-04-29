@@ -225,7 +225,6 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 int endY = rightMove.getEndY();
                 int startX = rightMove.getStartX();
                 int startY = rightMove.getStartY();
-                rightMove.perform(isBlack, isKing);
 
                 // updating boardArray
                 board.getBoardArray()[endX][endY] = new Piece(rightPieceImage, endX, endY, isBlack, isKing);
@@ -245,6 +244,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 if (Logic.isPieceNeeds2BeKing(isBlack, endX))
                     board.getBoardArray()[endX][endY].setKing();
 
+                rightMove.perform(isBlack, board.getBoardArray()[endX][endY].isKing());
 
                 // set onClick for the new piece (location)
                 rightPieceImage.setClickable(true);
@@ -270,7 +270,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 int endY = leftMove.getEndY();
                 int startX = leftMove.getStartX();
                 int startY = leftMove.getStartY();
-                leftMove.perform(isBlack, isKing);
+
 
                 // updating boardArray
                 board.getBoardArray()[endX][endY] = new Piece(leftPieceImage, endX, endY, isBlack, isKing);
@@ -289,6 +289,8 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 // check if needs to be king
                 if (Logic.isPieceNeeds2BeKing(isBlack, endX))
                     board.getBoardArray()[endX][endY].setKing();
+
+                leftMove.perform(isBlack, board.getBoardArray()[endX][endY].isKing());
 
                 // set onClick for the new piece (location)
                 leftPieceImage.setClickable(true);

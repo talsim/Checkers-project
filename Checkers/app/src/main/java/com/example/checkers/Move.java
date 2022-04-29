@@ -21,16 +21,20 @@ public class Move {
         if (isBlack)
             if (isKing) {
                 StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_king);
-                StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.black_king_highlighted);
+                StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.black_king);
             } else {
                 StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_piece);
+                StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.black_piece);
             }
 
         else if (isKing) {
             StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_king);
-            StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.black_king_highlighted);
-        } else
+            StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.red_king_highlighted);
+        } else{
             StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_piece);
+            StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.red_piece);
+        }
+
     }
 
 
