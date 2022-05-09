@@ -4,6 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.ListView;
+
+import com.google.firebase.firestore.DocumentReference;
+
+import org.w3c.dom.Document;
 
 
 
@@ -49,9 +54,6 @@ public class StartGameActivity extends AppCompatActivity {
 
 
     }
-
-
-
 
     public void setOnClickForPieces() {
                     /*

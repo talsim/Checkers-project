@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -33,14 +34,26 @@ public class WaitingRoomActivity extends AppCompatActivity {
     protected DrawerLayout drawer;
     protected TextView mUsername;
     protected TextView mEmail;
-    private FirebaseAuth fAuth;
-    private FirebaseFirestore fStore;
+
+    protected DocumentReference roomRef;
+    public ListView listView;
+    public String playerName;
+    public String roomName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waiting_room);
 
+        initNavHeader();
+        
+        roomName = playerName;
+        listView = findViewById(R.id.online_players_list);
+
+    }
+
+    public void initNavHeader()
+    {
         toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
 
@@ -75,11 +88,11 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
 
         View headerView = nav_view.getHeaderView(0);
-        mUsername = (TextView) headerView.findViewById(R.id.textviewUsername); // referring to the header style
-        mEmail = (TextView) headerView.findViewById(R.id.textviewEmail); // referring to the header style
+        mUsername = headerView.findViewById(R.id.textviewUsername); // referring to the header style
+        mEmail = headerView.findViewById(R.id.textviewEmail); // referring to the header style
 
-        fAuth = FirebaseAuth.getInstance();
-        fStore = FirebaseFirestore.getInstance();
+        FirebaseAuth fAuth = FirebaseAuth.getInstance();
+        FirebaseFirestore fStore = FirebaseFirestore.getInstance();
 
         String uid = Objects.requireNonNull(fAuth.getCurrentUser()).getUid(); // can't be null cuz we're already in WaitingRoom...
         DocumentReference documentReference = fStore.collection("users").document(uid);
@@ -88,9 +101,9 @@ public class WaitingRoomActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if(task.isSuccessful()){
-                    String username = task.getResult().getString("username");
-                    mUsername.setText(username);
-                    Log.d(TAG, "set username field in the navigation header to: " + username);
+                    playerName = task.getResult().getString("username");
+                    mUsername.setText(playerName);
+                    Log.d(TAG, "set username field in the navigation header to: " + playerName);
                 }
                 else
                     Log.d(TAG, "get() failed with: " + task.getException());
@@ -98,6 +111,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
         mEmail.setText(Objects.requireNonNull(fAuth.getCurrentUser()).getEmail()); // again, can't be null...
     }
+
 
     @Override
     public void onBackPressed()

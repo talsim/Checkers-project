@@ -2,10 +2,6 @@ package com.example.checkers;
 
 public class Logic {
 
-    public Logic() {
-
-    }
-
     public static boolean isPieceNeeds2BeKing(boolean isBlack, int x) {
         if (isBlack)
             return isBlackNeeds2BeKing(x);
