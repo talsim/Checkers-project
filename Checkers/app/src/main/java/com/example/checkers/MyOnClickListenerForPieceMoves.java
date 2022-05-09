@@ -1,6 +1,5 @@
 package com.example.checkers;
 
-import android.media.Image;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -310,6 +309,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         if (isBlack) {
             if (isKing) {
                 piece.setImageResource(R.drawable.black_king_highlighted);
+                piece.setTag(R.drawable.black_king_highlighted);
             } else {
                 piece.setImageResource(R.drawable.black_piece_highlighted);
                 piece.setTag(R.drawable.black_piece_highlighted);
@@ -318,6 +318,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         } else {
             if (isKing) {
                 piece.setImageResource(R.drawable.red_king_highlighted);
+                piece.setTag(R.drawable.red_king_highlighted);
             } else {
                 piece.setImageResource(R.drawable.red_piece_highlighted);
                 piece.setTag(R.drawable.red_piece_highlighted);
