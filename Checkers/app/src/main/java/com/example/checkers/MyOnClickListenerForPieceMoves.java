@@ -245,6 +245,8 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
 
                 rightMove.perform(isBlack, board.getBoardArray()[endX][endY].isKing());
 
+                isGameOver();
+
                 // set onClick for the new piece (location)
                 rightPieceImage.setClickable(true);
                 rightPieceImage.setOnClickListener(new View.OnClickListener() {
@@ -291,6 +293,8 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
 
                 leftMove.perform(isBlack, board.getBoardArray()[endX][endY].isKing());
 
+                isGameOver();
+
                 // set onClick for the new piece (location)
                 leftPieceImage.setClickable(true);
                 leftPieceImage.setOnClickListener(new View.OnClickListener() {
@@ -303,6 +307,29 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 isBlackTurn = !isBlack;
             }
         });
+    }
+
+    public void isGameOver() {
+        int redPieces = 0;
+        int blackPieces = 0;
+        for (int i = 0; i < Board.SIZE; i++)
+            for (int j = 0; j < Board.SIZE; j++) {
+                if (board.getBoardArray()[i][j] != null)
+                {
+                    if (board.getBoardArray()[i][j].isBlack())
+                        blackPieces++;
+                    else
+                        redPieces++;
+                }
+            }
+        if (redPieces == 0)
+            gameOver(false);
+        else if(blackPieces == 0)
+            gameOver(true);
+    }
+
+    private void gameOver(boolean isBlack) {
+        Log.d(TAG, "GAMEOVERRRRRRRRR*********");
     }
 
     private void highlightPiece(boolean isBlack, boolean isKing, ImageView piece) {

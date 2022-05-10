@@ -14,11 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ListView
-            android:id="@+id/online_players_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
+
 
     </RelativeLayout>
 
@@ -34,6 +30,11 @@
             android:background="@color/purple_500"
             android:minHeight="?attr/actionBarSize"/>
 
+        <ListView
+            android:id="@+id/listViewPlayers"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
     </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView

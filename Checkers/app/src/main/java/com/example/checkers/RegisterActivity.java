@@ -94,7 +94,7 @@ public class RegisterActivity extends AppCompatActivity {
                 Context appContext = getApplicationContext();
                 if (task.isSuccessful()){
                     Toast.makeText(appContext, "User created.", Toast.LENGTH_SHORT).show();
-                    addUserdataToCloud(username, email);
+                    addUserdataToCloud(username);
                     startActivity(new Intent(appContext, WaitingRoomActivity.class));
                     finish();
                 }
@@ -111,7 +111,7 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    protected void addUserdataToCloud(String username, String email) {
+    protected void addUserdataToCloud(String username) {
         // Create a new user with its username and email
         Map<String, Object> user = new HashMap<>();
         user.put("username", username);

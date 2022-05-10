@@ -10,9 +10,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -20,12 +21,20 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class WaitingRoomActivity extends AppCompatActivity {
@@ -36,6 +45,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
     protected TextView mEmail;
 
     protected DocumentReference roomRef;
+    private FirebaseFirestore fStore;
     public ListView listView;
     public String playerName;
     public String roomName;
@@ -46,10 +56,59 @@ public class WaitingRoomActivity extends AppCompatActivity {
         setContentView(R.layout.activity_waiting_room);
 
         initNavHeader();
-        
-        roomName = playerName;
-        listView = findViewById(R.id.online_players_list);
 
+        listView = (ListView) findViewById(R.id.listViewPlayers);
+        ArrayList<String> roomsList = new ArrayList<>();
+        fStore = FirebaseFirestore.getInstance();
+        roomName = "";
+
+        //
+        Log.d(TAG, "playname is : " + playerName);
+
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // join an existing room and add yourself as player2
+                roomName = roomsList.get(position);
+                roomRef = fStore.collection("rooms").document(roomName);
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("player2", playerName);
+                addRoomEventListener();
+                roomRef.set(userData);
+            }
+        });
+
+        addRoomsEventListener(roomsList);
+    }
+
+    private void addRoomsEventListener(ArrayList<String> roomsList) {
+        CollectionReference roomsRef = fStore.collection("rooms");
+        roomsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (error != null){
+                    Log.w(TAG, "Listen failed.", error);
+                    return;
+                }
+                roomsList.clear();
+                for (QueryDocumentSnapshot doc : value){
+                    if (!doc.getId().equals(playerName))
+                        roomsList.add(doc.getId());
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, roomsList);
+                listView.setAdapter(adapter);
+            }
+        });
+    }
+
+    public void addRoomEventListener(){
+        roomRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                Log.d(TAG,"START GAME!!! :)");
+            }
+        });
     }
 
     public void initNavHeader()
@@ -104,6 +163,14 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     playerName = task.getResult().getString("username");
                     mUsername.setText(playerName);
                     Log.d(TAG, "set username field in the navigation header to: " + playerName);
+
+                    //
+                    roomName = playerName;
+                    roomRef = fStore.collection("rooms").document(roomName);
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("player1", playerName);
+                    addRoomEventListener();
+                    roomRef.set(userData);
                 }
                 else
                     Log.d(TAG, "get() failed with: " + task.getException());
