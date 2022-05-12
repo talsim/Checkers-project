@@ -24,7 +24,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         displayMoveOptionsAndMove(this.piece.getX(), this.piece.getY(), this.piece.isBlack(), this.piece.isKing(), (ImageView) v);
     }
 
-    private void displayMoveOptionsAndMove(int x, int y, boolean isBlack, boolean isKing, ImageView pieceImage) {
+    public void displayMoveOptionsAndMove(int x, int y, boolean isBlack, boolean isKing, ImageView pieceImage) {
 
         clearPossibleLocationMarkers();
         unsetOnClickLastImageViews();

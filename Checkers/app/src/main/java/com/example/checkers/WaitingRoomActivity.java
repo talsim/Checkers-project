@@ -30,10 +30,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -57,7 +55,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
         initNavHeader();
 
-        listView = (ListView) findViewById(R.id.listViewPlayers);
+        listView = findViewById(R.id.listViewPlayers);
         ArrayList<String> roomsList = new ArrayList<>();
         fStore = FirebaseFirestore.getInstance();
         roomName = "";
@@ -74,15 +72,15 @@ public class WaitingRoomActivity extends AppCompatActivity {
                 roomRef = fStore.collection("rooms").document(roomName);
                 Map<String, Object> userData = new HashMap<>();
                 userData.put("player2", playerName);
-                addRoomEventListener();
-                roomRef.set(userData);
+                listenForRoomUpdates();
+                addUserdataToDatabase(userData);
             }
         });
 
-        addRoomsEventListener(roomsList);
+        updateListview(roomsList);
     }
 
-    private void addRoomsEventListener(ArrayList<String> roomsList) {
+    private void updateListview(ArrayList<String> roomsList) {
         CollectionReference roomsRef = fStore.collection("rooms");
         roomsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -102,11 +100,30 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
     }
 
-    public void addRoomEventListener(){
+    // when a room gets updated it means a player joined, so send him a request
+    public void listenForRoomUpdates(){
         roomRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 Log.d(TAG,"START GAME!!! :)");
+            }
+        });
+    }
+
+    private void addUserdataToDatabase(Map<String, Object> userData){
+        roomRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        roomRef.update(userData);
+                    } else {
+                        roomRef.set(userData);
+                    }
+                } else {
+                    Log.d(TAG, "Failed with: ", task.getException());
+                }
             }
         });
     }
@@ -136,6 +153,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                         break;
                     case R.id.nav_logout:
                         FirebaseAuth.getInstance().signOut();
+                        listView.setAdapter(null);
                         startActivity(new Intent(getApplicationContext(), MainActivity.class));
                         finish();
                         break;
@@ -169,8 +187,9 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     roomRef = fStore.collection("rooms").document(roomName);
                     Map<String, Object> userData = new HashMap<>();
                     userData.put("player1", playerName);
-                    addRoomEventListener();
-                    roomRef.set(userData);
+                    listenForRoomUpdates();
+                    addUserdataToDatabase(userData);
+
                 }
                 else
                     Log.d(TAG, "get() failed with: " + task.getException());
