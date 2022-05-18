@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,6 +38,7 @@ import java.util.Objects;
 
 public class WaitingRoomActivity extends AppCompatActivity {
     public static final String TAG = "WaitingRoom";
+    public static final String ROOMSPATH = "rooms";
     protected Toolbar toolbar;
     protected DrawerLayout drawer;
     protected TextView mUsername;
@@ -47,31 +49,31 @@ public class WaitingRoomActivity extends AppCompatActivity {
     public ListView listView;
     public String playerName;
     public String roomName;
+    public boolean isHost;
+    public boolean isInGame;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waiting_room);
 
-        initNavHeader();
-
         listView = findViewById(R.id.listViewPlayers);
         ArrayList<String> roomsList = new ArrayList<>();
         fStore = FirebaseFirestore.getInstance();
-        roomName = "";
+        isHost = true; // initial value
+        isInGame = false; // initial value
 
-        //
-        Log.d(TAG, "playname is : " + playerName);
-
-
+        initNavHeader();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // join an existing room and add yourself as player2
+                // join an existing room and add yourself as guest
                 roomName = roomsList.get(position);
-                roomRef = fStore.collection("rooms").document(roomName);
+                roomRef = fStore.collection(ROOMSPATH).document(roomName);
                 Map<String, Object> userData = new HashMap<>();
-                userData.put("player2", playerName);
+                userData.put("guest", playerName);
+                isHost = false;
+                isInGame = true;
                 listenForRoomUpdates();
                 addUserdataToDatabase(userData);
             }
@@ -81,16 +83,18 @@ public class WaitingRoomActivity extends AppCompatActivity {
     }
 
     private void updateListview(ArrayList<String> roomsList) {
-        CollectionReference roomsRef = fStore.collection("rooms");
+        roomsList.clear();
+        listView.setAdapter(null);
+        CollectionReference roomsRef = fStore.collection(ROOMSPATH);
         roomsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (error != null){
+                if (error != null) {
                     Log.w(TAG, "Listen failed.", error);
                     return;
                 }
                 roomsList.clear();
-                for (QueryDocumentSnapshot doc : value){
+                for (QueryDocumentSnapshot doc : value) {
                     if (!doc.getId().equals(playerName))
                         roomsList.add(doc.getId());
                 }
@@ -101,16 +105,16 @@ public class WaitingRoomActivity extends AppCompatActivity {
     }
 
     // when a room gets updated it means a player joined, so send him a request
-    public void listenForRoomUpdates(){
+    public void listenForRoomUpdates() {
         roomRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                Log.d(TAG,"START GAME!!! :)");
+                Log.d(TAG, "START GAME!!! :)");
             }
         });
     }
 
-    private void addUserdataToDatabase(Map<String, Object> userData){
+    private void addUserdataToDatabase(Map<String, Object> userData) {
         roomRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -128,8 +132,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
     }
 
-    public void initNavHeader()
-    {
+    public void initNavHeader() {
         toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
 
@@ -154,6 +157,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     case R.id.nav_logout:
                         FirebaseAuth.getInstance().signOut();
                         listView.setAdapter(null);
+                        disconnectUser();
                         startActivity(new Intent(getApplicationContext(), MainActivity.class));
                         finish();
                         break;
@@ -172,37 +176,51 @@ public class WaitingRoomActivity extends AppCompatActivity {
         FirebaseFirestore fStore = FirebaseFirestore.getInstance();
 
         String uid = Objects.requireNonNull(fAuth.getCurrentUser()).getUid(); // can't be null cuz we're already in WaitingRoom...
-        DocumentReference documentReference = fStore.collection("users").document(uid);
+        DocumentReference usersRef = fStore.collection("users").document(uid);
 
-        documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        usersRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.isSuccessful()){
+                if (task.isSuccessful()) {
                     playerName = task.getResult().getString("username");
                     mUsername.setText(playerName);
                     Log.d(TAG, "set username field in the navigation header to: " + playerName);
 
-                    //
-                    roomName = playerName;
-                    roomRef = fStore.collection("rooms").document(roomName);
-                    Map<String, Object> userData = new HashMap<>();
-                    userData.put("player1", playerName);
-                    listenForRoomUpdates();
-                    addUserdataToDatabase(userData);
+                    connectUser();
 
-                }
-                else
+                } else
                     Log.d(TAG, "get() failed with: " + task.getException());
             }
         });
         mEmail.setText(Objects.requireNonNull(fAuth.getCurrentUser()).getEmail()); // again, can't be null...
     }
 
+    public void disconnectUser() {
+        if (isHost)
+            if (!isInGame)
+                roomRef.delete();
+
+    }
+
+    // create a room with your name (as host)
+    public void connectUser() {
+        if (isHost)
+        {
+            roomName = playerName;
+            roomRef = fStore.collection(ROOMSPATH).document(roomName);
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("host", playerName);
+            isHost = true;
+            isInGame = false;
+            listenForRoomUpdates();
+            addUserdataToDatabase(userData);
+        }
+    }
+
 
     @Override
-    public void onBackPressed()
-    {
-        if (drawer.isDrawerOpen(GravityCompat.START)){
+    public void onBackPressed() {
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
         startActivity(new Intent(getApplicationContext(), StartGameActivity.class));
@@ -211,7 +229,20 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        super.onStop();
+        // remove player from database because he is no longer online.
+        Log.d(TAG, "ONSTOP: USER DISCONNECTED");
+        disconnectUser();
 
+        super.onStop();
+    }
+
+    @Override
+    protected void onRestart() {
+        // rejoin player to database because he came back online.
+        Log.d(TAG, "ONRESTART: USER IS ONLINE AGAIN");
+        connectUser();
+
+
+        super.onRestart();
     }
 }

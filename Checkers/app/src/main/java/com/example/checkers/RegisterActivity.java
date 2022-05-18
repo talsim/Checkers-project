@@ -94,7 +94,7 @@ public class RegisterActivity extends AppCompatActivity {
                 Context appContext = getApplicationContext();
                 if (task.isSuccessful()){
                     Toast.makeText(appContext, "User created.", Toast.LENGTH_SHORT).show();
-                    addUserdataToCloud(username);
+                    addUserdataToCloud(username, email);
                     startActivity(new Intent(appContext, WaitingRoomActivity.class));
                     finish();
                 }
@@ -111,16 +111,18 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    protected void addUserdataToCloud(String username) {
+    protected void addUserdataToCloud(String username, String email) {
         // Create a new user with its username and email
-        Map<String, Object> user = new HashMap<>();
-        user.put("username", username);
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("username", username);
+        userData.put("email", email);
+        userData.put("isOnline", true);
 
         String uid = Objects.requireNonNull(fAuth.getCurrentUser()).getUid(); // impossible to get nullptr exception because this code snippet will only be run if the user is successfully created in fAuth
         DocumentReference documentReference = fStore.collection("users").document(uid);
 
         // Add a new document with the unique UID of the user
-        documentReference.set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
+        documentReference.set(userData).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
                 Log.d(TAG, "OnSuccess: user profile is created for uid: " + uid);

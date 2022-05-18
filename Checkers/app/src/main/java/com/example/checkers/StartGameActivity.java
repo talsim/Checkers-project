@@ -56,14 +56,6 @@ public class StartGameActivity extends AppCompatActivity {
     }
 
     public void setOnClickForPieces() {
-                    /*
-                    1. implement onClick movement for black
-                    1.1. if piece is NOT on edge (y > 0  && y < 7), then it can move upwards with making sure that moving diagonally by doing the following: going upwards -> (endX == startX+1) AND left or right -> (endY == startY-1 || endY-1 == startY)
-                    1.2. if piece is on edge, then find out what edge (left or right) by doing (y == 0) for left OR (y == 7) for right
-                    1.3. if piece is on left edge, then check that it moves to a higher row ofc (endX == startX+1), and also to (endY == 1)
-                    1.4. if piece is on right edge, then check that it moves also to higher row, and also to (endY == 6)
-                    1.5. DONE! :]
-                     */
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
                 Piece currPiece = board.getBoardArray()[x][y];

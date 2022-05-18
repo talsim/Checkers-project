@@ -24,8 +24,8 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(getApplicationContext(), WaitingRoomActivity.class));
         }
 
-        login = (Button) findViewById(R.id.login);
-        settings = (Button) findViewById(R.id.settings);
+        login = findViewById(R.id.login);
+        settings = findViewById(R.id.settings);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override

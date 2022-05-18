@@ -1,6 +1,7 @@
 package com.example.checkers;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -20,14 +22,20 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "LoginActivity";
     protected Button login;
     protected TextView createAccount;
     protected EditText mEmail;
@@ -70,10 +78,28 @@ public class LoginActivity extends AppCompatActivity {
     protected void loginHandler() {
         String email = mEmail.getText().toString().trim(); // remove spaces
         String password = mPassword.getText().toString().trim();
+        boolean isOnline = false;
+
+        Task<QuerySnapshot> task = fStore.collection("users").get();
 
         // check user input (e.g make sure that the user entered a password)
         if (!validateFields(email, password))
             return;
+
+        while (!task.isComplete()) // waiting for task to finish
+        {
+            System.out.println("waiting for task to finish");
+        }
+
+        if (task.isSuccessful()) {
+            if (isUserOnline(email, task))
+            {
+                Toast.makeText(getApplicationContext(), "Error! User is already online in another device.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } else {
+            Log.d(TAG, "Error getting documents: ", task.getException());
+        }
 
         progressBar.setVisibility(View.VISIBLE);
 
@@ -100,6 +126,22 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
+    private boolean isUserOnline(String email, @NonNull Task<QuerySnapshot> task) {
+
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            String currUserEmail = (String) doc.get("email");
+            if (currUserEmail != null)
+                if (currUserEmail.equals(email)) // found the correct user
+                {
+                    Boolean online = (Boolean) doc.get("isOnline");
+                    if (online != null)
+                        return online;
+                }
+        }
+        return false;
+    }
+
     /*
         Check if user input in different fields such as email and password are valid or not.
         Returns: true if user input is OK, else otherwise.
