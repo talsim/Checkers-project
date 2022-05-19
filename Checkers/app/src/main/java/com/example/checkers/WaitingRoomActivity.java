@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -51,7 +52,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
     public ListView listView;
     public String playerName;
     public String roomName;
-    public AlertDialog gameRequestDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,9 +73,8 @@ public class WaitingRoomActivity extends AppCompatActivity {
                 Map<String, Object> userData = new HashMap<>();
                 userData.put("guest", playerName);
                 userData.put("isInGame", true);
-                addUserdataToDatabase(userData);
+                addDataToDatabase(userData);
                 listenForRoomUpdates();
-                Log.d(TAG, "SOMEONE JOINED !!!!!");
             }
         });
 
@@ -98,7 +98,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
     }
 
     private boolean getIsHost() {
-        Log.d(TAG, "playerName = " +playerName + ";; roomName = " + roomName);
+        Log.d(TAG, "playerName = " + playerName + ";; roomName = " + roomName);
         return playerName.equals(roomName);
     }
 
@@ -141,15 +141,16 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
                 */
 
-                // sum up:
-                // take the needed fields from the database, and change isHost and isInGame accordingly to the local values (playerName, roomName...)
+                if (error != null) {
+                    Log.w(TAG, "Listen failed.", error);
+                    return;
+                }
 
                 Log.d(TAG, "ROOM UPDATED!");
                 if (getIsInGame()) // if a guest joined
                 {
                     Log.d(TAG, "a guest joined! :D");
                     sendGameRequestToHost();
-                    // show_for_guest_challenging_state
                 }
             }
         });
@@ -158,34 +159,148 @@ public class WaitingRoomActivity extends AppCompatActivity {
     // display the alertDialog on the host's (only!) phone
     private void sendGameRequestToHost() {
         // *** check if this is the host's phone by comparing the roomName (which is the host's username) to playerName
-        String guestUsername = playerName; // playerName is the name of the current phone's user, and that user wants to play with the host, which makes him a guest in the room.
-        Log.d(TAG, "isHost: " + getIsHost());
-        if (getIsHost()) // if it's not the guest' phone
+        String guestUsername = "*GUEST*"; // get from db
+        String hostUsername = roomName;
+        Map<String, Object> gameRequestData = new HashMap<>();
+        AlertDialog gameRequestDialog;
+
+        if (getIsHost()) // for the host
         {
-            AlertDialog.Builder gameRequestBuilder = new AlertDialog.Builder(WaitingRoomActivity.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-            gameRequestBuilder.setTitle("Challenge Request");
-            gameRequestBuilder.setMessage("You've been challenged by " + guestUsername + "!");
-            gameRequestBuilder.setCancelable(false);
-            gameRequestBuilder.setPositiveButton("ACCEPT", new DialogInterface.OnClickListener() {
+
+            Log.d(TAG, "CREATING BUILDER FOR HOST");
+            AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(WaitingRoomActivity.this, AlertDialog.THEME_HOLO_LIGHT);
+            gameRequestDialogBuilder.setTitle("Challenge Request");
+            gameRequestDialogBuilder.setCancelable(false);
+            gameRequestDialogBuilder.setMessage("You've been challenged by " + guestUsername + "!");
+
+
+            //handleHostDialogChoice(gameRequestDialogBuilder, gameRequestDialog, gameRequestData);
+
+            gameRequestDialogBuilder.setPositiveButton("ACCEPT", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Log.d(TAG, "START GAME FOR HOST AND GUEST!");
-                    gameRequestDialog.dismiss();
+
+                    gameRequestData.put("startGame", true);
+                    addDataToDatabase(gameRequestData);
+
+                    // LET'S PLAYYYYYY!!!!!!!!!
+                    startActivity(new Intent(getApplicationContext(), StartGameActivity.class));
                 }
             });
-            gameRequestBuilder.setNegativeButton("DECLINE", new DialogInterface.OnClickListener() {
+            gameRequestDialogBuilder.setNegativeButton("DECLINE", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Log.d(TAG, "HOST DECLINED: SEND 'DECLINED' MESSAGE TO GUEST");
-                    gameRequestDialog.dismiss();
+
+                    gameRequestData.put("startGame", false);
+                    addDataToDatabase(gameRequestData);
                 }
             });
-            gameRequestDialog = gameRequestBuilder.create();
-            gameRequestDialog.show();
+
+            gameRequestDialog = gameRequestDialogBuilder.create();
+
+
+            // listen for guest updates (maybe he canceled the request)
+            setListenerForGuestUpdates(guestUsername, gameRequestDialog);
+
+
+        } else // for the guest
+        {
+            AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(WaitingRoomActivity.this, AlertDialog.THEME_HOLO_LIGHT);
+            gameRequestDialogBuilder.setTitle("Challenge Request");
+            gameRequestDialogBuilder.setMessage("Challenging " + hostUsername + "...");
+            gameRequestDialogBuilder.setCancelable(false);
+
+
+            gameRequestDialogBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Log.d(TAG, "GUEST CANCELED: SEND 'CANCELED' MESSAGE TO HOST");
+
+                    Map<String, Object> cancelRequestData = new HashMap<>();
+                    cancelRequestData.put("canceled", true);
+                    addDataToDatabase(cancelRequestData);
+                }
+            });
+
+            gameRequestDialog = gameRequestDialogBuilder.create();
+
+
+            // listen for host response
+            setListenerForHostUpdates(hostUsername, gameRequestDialog);
+
+//            gameRequestDialogBuilder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//                @Override
+//                public void onCancel(DialogInterface dialog) {
+//                    gameRequestDialog.hide();
+//                    gameRequestDialog.dismiss();
+//                    gameRequestDialog.dismiss();
+//
+//                    Log.d(TAG, "GUEST CANCELED: SEND 'CANCELED' MESSAGE TO HOST");
+//
+//                    Map<String, Object> cancelRequestData = new HashMap<>();
+//                    cancelRequestData.put("canceled", true);
+//                    addDataToDatabase(cancelRequestData);
+//                }
+//            });
         }
+
+
+        gameRequestDialog.show();
+
     }
 
-    private void addUserdataToDatabase(Map<String, Object> userData) {
+    private void handleHostDialogChoice(AlertDialog.Builder gameRequestDialogBuilder, AlertDialog gameRequestDialog, Map<String, Object> gameRequestData) {
+
+    }
+
+
+    private void setListenerForGuestUpdates(String guestUsername, AlertDialog gameRequestDialog) {
+        roomRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w(TAG, "Listen failed.", error);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    Boolean isCanceled = (Boolean) snapshot.get("canceled");
+                    if (isCanceled != null)
+                        if (isCanceled) { // guest canceled
+                            gameRequestDialog.dismiss();
+                            Toast.makeText(getApplicationContext(), "\"" + guestUsername + "\"" + " canceled the game request", Toast.LENGTH_SHORT).show();
+                        }
+                }
+            }
+        });
+    }
+
+    private void setListenerForHostUpdates(String hostUsername, AlertDialog gameRequestDialog) {
+        roomRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w(TAG, "Listen failed.", error);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    Boolean startGame = (Boolean) snapshot.get("startGame");
+                    if (startGame != null)
+                        if (startGame) { // host confirmed = LET'S FUCKING PLAYYYY!!!!
+                            startActivity(new Intent(getApplicationContext(), StartGameActivity.class));
+                        } else { // host declined
+                            gameRequestDialog.dismiss();
+                            Toast.makeText(getApplicationContext(), "\"" + hostUsername + "\"" + " declined the game request", Toast.LENGTH_SHORT).show();
+                        }
+                }
+
+            }
+        });
+    }
+
+
+    private void addDataToDatabase(Map<String, Object> userData) {
         roomRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -280,7 +395,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         Map<String, Object> userData = new HashMap<>();
         userData.put("host", playerName);
         userData.put("isInGame", false);
-        addUserdataToDatabase(userData);
+        addDataToDatabase(userData);
         listenForRoomUpdates();
     }
 
@@ -290,7 +405,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        startActivity(new Intent(getApplicationContext(), StartGameActivity.class));
+        //startActivity(new Intent(getApplicationContext(), StartGameActivity.class));
         //super.onBackPressed(); // this disables back button by not calling the super function
     }
 
