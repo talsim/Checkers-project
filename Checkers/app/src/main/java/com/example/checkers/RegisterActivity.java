@@ -116,7 +116,7 @@ public class RegisterActivity extends AppCompatActivity {
         Map<String, Object> userData = new HashMap<>();
         userData.put("username", username);
         userData.put("email", email);
-        userData.put("isOnline", true);
+        userData.put("isOnline", true); // beta
 
         String uid = Objects.requireNonNull(fAuth.getCurrentUser()).getUid(); // impossible to get nullptr exception because this code snippet will only be run if the user is successfully created in fAuth
         DocumentReference documentReference = fStore.collection("users").document(uid);

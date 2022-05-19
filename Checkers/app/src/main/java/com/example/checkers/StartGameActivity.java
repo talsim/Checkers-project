@@ -88,7 +88,6 @@ public class StartGameActivity extends AppCompatActivity {
         }
     }
 
-
     private void initImageViews() {
 
         imageViewsTiles[0][1] = findViewById(R.id.circle01);

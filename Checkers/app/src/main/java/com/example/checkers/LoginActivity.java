@@ -78,28 +78,28 @@ public class LoginActivity extends AppCompatActivity {
     protected void loginHandler() {
         String email = mEmail.getText().toString().trim(); // remove spaces
         String password = mPassword.getText().toString().trim();
-        boolean isOnline = false;
 
-        Task<QuerySnapshot> task = fStore.collection("users").get();
+        Task<QuerySnapshot> getUsersCollection = fStore.collection("users").get();
 
         // check user input (e.g make sure that the user entered a password)
         if (!validateFields(email, password))
             return;
 
-        while (!task.isComplete()) // waiting for task to finish
+        /*         *** BETA - solution for not allowing a player to login from different devices if he's online already
+        while (!getUsersCollection.isComplete()) // waiting for task to finish
         {
             System.out.println("waiting for task to finish");
         }
 
-        if (task.isSuccessful()) {
-            if (isUserOnline(email, task))
+        if (getUsersCollection.isSuccessful()) {
+            if (isUserOnline(email, getUsersCollection))
             {
                 Toast.makeText(getApplicationContext(), "Error! User is already online in another device.", Toast.LENGTH_SHORT).show();
                 return;
             }
         } else {
-            Log.d(TAG, "Error getting documents: ", task.getException());
-        }
+            Log.d(TAG, "Error getting documents: ", getUsersCollection.getException());
+        }*/
 
         progressBar.setVisibility(View.VISIBLE);
 
