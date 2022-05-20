@@ -1,8 +1,5 @@
 package com.example.checkers;
 
-import android.util.Log;
-import android.widget.ImageView;
-
 // class that defines a simple move on the board
 public class Move {
     private int startX, startY, endX, endY;
@@ -16,23 +13,23 @@ public class Move {
     }
 
     public void perform(boolean isBlack, boolean isKing) {
-        StartGameActivity.imageViewsTiles[this.startX][this.startY].setImageResource(android.R.color.transparent);
-        StartGameActivity.imageViewsTiles[this.startX][this.startY].setClickable(false);
+        GameActivity.imageViewsTiles[this.startX][this.startY].setImageResource(android.R.color.transparent);
+        GameActivity.imageViewsTiles[this.startX][this.startY].setClickable(false);
         if (isBlack)
             if (isKing) {
-                StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_king);
-                StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.black_king);
+                GameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_king);
+                GameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.black_king);
             } else {
-                StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_piece);
-                StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.black_piece);
+                GameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.black_piece);
+                GameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.black_piece);
             }
 
         else if (isKing) {
-            StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_king);
-            StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.red_king_highlighted);
+            GameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_king);
+            GameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.red_king_highlighted);
         } else{
-            StartGameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_piece);
-            StartGameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.red_piece);
+            GameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_piece);
+            GameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.red_piece);
         }
 
     }

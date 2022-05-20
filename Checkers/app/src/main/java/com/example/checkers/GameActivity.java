@@ -1,12 +1,15 @@
 package com.example.checkers;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.w3c.dom.Document;
 
@@ -34,7 +37,7 @@ import org.w3c.dom.Document;
  * 7.	The player with the black checkers moves first.
  */
 
-public class StartGameActivity extends AppCompatActivity {
+public class GameActivity extends AppCompatActivity {
 
     public static final ImageView[][] imageViewsTiles = new ImageView[Board.SIZE][Board.SIZE]; // all the squares which contain the actual pieces (reference from the xml)
     protected Board board;
@@ -45,22 +48,29 @@ public class StartGameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_game);
 
+        String roomName;
+        Bundle extras = getIntent().getExtras();
+        if (extras == null)
+            roomName = null;
+        else
+            roomName = extras.getString("roomName");
+
         initImageViews();
 
         board = new Board();
         initBoardAndDrawPieces(); // init board as well as drawing the black and red pieces on it
 
-        setOnClickForPieces();
+        setOnClickForPieces(roomName);
 
 
     }
 
-    public void setOnClickForPieces() {
+    public void setOnClickForPieces(String roomName) {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
                 Piece currPiece = board.getBoardArray()[x][y];
                 if (currPiece != null) {
-                    currPiece.getImage().setOnClickListener(new MyOnClickListenerForPieceMoves(currPiece, board));
+                    currPiece.getImage().setOnClickListener(new MyOnClickListenerForPieceMoves(currPiece, board, roomName));
                 }
 
             }
@@ -122,6 +132,12 @@ public class StartGameActivity extends AppCompatActivity {
         imageViewsTiles[7][2] = findViewById(R.id.circle72);
         imageViewsTiles[7][4] = findViewById(R.id.circle74);
         imageViewsTiles[7][6] = findViewById(R.id.circle76);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // back button is not allowed here.
+        super.onBackPressed();
     }
 
 }

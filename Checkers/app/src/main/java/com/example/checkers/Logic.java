@@ -24,12 +24,14 @@ public class Logic {
         return y == 0;
     }
 
+    // check if red has space to move
     public static boolean canRedMoveDown(int x) {
-        return x + 1 <= 7; // check if red reached the end (already king)
+        return x + 1 <= 7; // if red reached the end (already king)
     }
 
+    // check if black has space to move
     public static boolean canBlackMoveUp(int x) {
-        return x - 1 >= 0; // check if black reached the end (already king)
+        return x - 1 >= 0; // if black reached the end (already king)
     }
 
     // if not on edge and has space to jump
@@ -46,6 +48,7 @@ public class Logic {
         return x + 2 <= 7 && y + 2 <= 7;
     }
 
+    // check if the given x and y axis are taken on the board by another piece
     public static boolean isTileAvailable(Board board, int x, int y) {
         return board.getBoardArray()[x][y] == null;
     }
