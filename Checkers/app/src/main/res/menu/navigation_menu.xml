@@ -6,16 +6,23 @@
         <item
             android:id="@+id/nav_scores"
             android:icon="@drawable/ic_points"
-            android:title="My Points" />
+            android:title="@string/my_points" />
 
         <item
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings"
-            android:title="Settings" />
+            android:title="@string/settings" />
+
+        <item
+            android:id="@+id/nav_feedback"
+            android:icon="@drawable/ic_feedback"
+            android:title="@string/contact_developer" />
 
         <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/ic_logout"
-            android:title="Logout" />
+            android:title="@string/logout" />
+
+
     </group>
 </menu>

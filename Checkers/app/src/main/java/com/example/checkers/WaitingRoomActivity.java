@@ -9,9 +9,14 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,13 +54,12 @@ public class WaitingRoomActivity extends AppCompatActivity {
     protected TextView mUsername;
     protected TextView mEmail;
 
-    protected DocumentReference roomRef;
+    public DocumentReference roomRef;
     protected ListenerRegistration roomListener;
     private FirebaseFirestore fStore;
     public ListView listView;
     public String playerName;
     public String roomName;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +86,18 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
 
         updateListview(roomsList);
+    }
+
+    // Contact button handler function
+    public void ContactHandler() {
+        Uri uri = Uri.parse("smsto:" + 99999999);
+        Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
+        intent.putExtra("sms_body", "Your feedback here");
+        try {
+            startActivity(intent);
+        } catch (android.content.ActivityNotFoundException e) {
+            Toast.makeText(getApplicationContext(), "SMS FAILED, please try again later", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private boolean getIsInGame() {
@@ -164,6 +180,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         String hostUsername = roomName;
         Map<String, Object> gameRequestData = new HashMap<>();
         AlertDialog gameRequestDialog;
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         DocumentReference hostUpdatesRef = roomRef.collection("hostUpdates").document("gameStatus");
         DocumentReference guestUpdatesRef = roomRef.collection("guestUpdates").document("gameStatus");
 
@@ -189,7 +206,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     addDataToDatabase(gameRequestData, hostUpdatesRef);
 
                     // LET'S PLAYYYYYY!!!!!!!!!
-                    startActivity(new Intent(getApplicationContext(), StartGameActivity.class));
+                    startGame(v);
                 }
             });
             gameRequestDialogBuilder.setNegativeButton("DECLINE", new DialogInterface.OnClickListener() {
@@ -202,7 +219,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
                     // remove guest now because host doesn't want to play with him
                     Map<String, Object> updates = new HashMap<>();
-                    updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (removes it)
+                    updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
                     updates.put("isInGame", false); // update isInGame to false
                     addDataToDatabase(updates, roomRef);
 
@@ -211,7 +228,6 @@ public class WaitingRoomActivity extends AppCompatActivity {
             });
 
             gameRequestDialog = gameRequestDialogBuilder.create();
-
 
             // listen for guest updates (e.g maybe he canceled the request)
             setListenerForGuestUpdates(guestUsername, gameRequestDialog, guestUpdatesRef);
@@ -250,33 +266,13 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
 
             // listen for host response
-            setListenerForHostUpdates(hostUsername, gameRequestDialog, hostUpdatesRef);
-
-//            gameRequestDialogBuilder.setOnCancelListener(new DialogInterface.OnCancelListener() {
-//                @Override
-//                public void onCancel(DialogInterface dialog) {
-//                    gameRequestDialog.hide();
-//                    gameRequestDialog.dismiss();
-//                    gameRequestDialog.dismiss();
-//
-//                    Log.d(TAG, "GUEST CANCELED: SEND 'CANCELED' MESSAGE TO HOST");
-//
-//                    Map<String, Object> cancelRequestData = new HashMap<>();
-//                    cancelRequestData.put("canceled", true);
-//                    addDataToDatabase(cancelRequestData);
-//                }
-//            });
+            setListenerForHostUpdates(hostUsername, gameRequestDialog, hostUpdatesRef, v);
         }
 
 
         gameRequestDialog.show();
 
     }
-
-    private void handleHostDialogChoice(AlertDialog.Builder gameRequestDialogBuilder, AlertDialog gameRequestDialog, Map<String, Object> gameRequestData) {
-
-    }
-
     private String getGuestUsername() {
         Task<DocumentSnapshot> getGuest = roomRef.get();
         while (!getGuest.isComplete()) {
@@ -321,7 +317,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
     }
 
-    private void setListenerForHostUpdates(String hostUsername, AlertDialog gameRequestDialog, DocumentReference hostUpdatesRef) {
+    private void setListenerForHostUpdates(String hostUsername, AlertDialog gameRequestDialog, DocumentReference hostUpdatesRef, Vibrator v) {
         hostUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
@@ -334,7 +330,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     if (startGame != null)
                         if (startGame) { // host confirmed = LET'S FUCKING PLAYYYY!!!!
                             gameRequestDialog.dismiss();
-                            startActivity(new Intent(getApplicationContext(), StartGameActivity.class));
+                            startGame(v);
                         } else { // host declined
                             gameRequestDialog.dismiss();
                             Toast.makeText(getApplicationContext(), "" + hostUsername + "" + " declined the game request", Toast.LENGTH_SHORT).show();
@@ -352,6 +348,25 @@ public class WaitingRoomActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void startGame(Vibrator v)
+    {
+        // Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(500);
+        }
+        if (!getIsHost()) // delete the guest's room when starting a game
+        {
+            DocumentReference guestRoomRef = fStore.collection(ROOMSPATH).document(playerName);
+            guestRoomRef.delete();
+        }
+        Intent intent = new Intent(getApplicationContext(), GameActivity.class);
+        intent.putExtra("roomName", roomName);
+        startActivity(intent);
     }
 
 
@@ -402,6 +417,10 @@ public class WaitingRoomActivity extends AppCompatActivity {
                         startActivity(new Intent(getApplicationContext(), MainActivity.class));
                         finish();
                         break;
+                    case R.id.nav_feedback:
+                        ContactHandler();
+                        break;
+
                     default:
                         throw new IllegalStateException("Unexpected value: " + item.getItemId());
                 }

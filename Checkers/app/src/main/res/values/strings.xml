@@ -8,4 +8,9 @@
         of the navigation drawer-->
     <string name="nav_open">Open</string>
     <string name="nav_close">Close</string>
+    <string name="online_players">Online players</string>
+    <string name="my_points">My Points</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="contact_developer">Contact Developer</string>
 </resources>
