@@ -34,4 +34,8 @@ public class DatabaseUtils {
             }
         });
     }
+
+    public static boolean isHost(String playerName, String roomName) {
+        return playerName.equals(roomName);
+    }
 }

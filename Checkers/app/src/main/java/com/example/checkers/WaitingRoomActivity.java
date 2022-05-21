@@ -1,6 +1,7 @@
 package com.example.checkers;
 
 import static com.example.checkers.DatabaseUtils.addDataToDatabase;
+import static com.example.checkers.DatabaseUtils.isHost;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -58,6 +59,9 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
     public DocumentReference roomRef;
     protected ListenerRegistration roomListener;
+    protected ListenerRegistration hostUpdatesListener;
+    protected ListenerRegistration guestUpdatesListener;
+    protected ListenerRegistration roomsUpdaterView;
     private FirebaseFirestore fStore;
     public ListView listView;
     public String playerName;
@@ -120,13 +124,9 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
     }
 
-    private boolean isHost() {
-        return playerName.equals(roomName);
-    }
-
     private void updateListview(ArrayList<String> roomsList) {
         CollectionReference roomsRef = fStore.collection(ROOMSPATH);
-        roomsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        roomsUpdaterView = roomsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if (error != null) {
@@ -193,8 +193,8 @@ public class WaitingRoomActivity extends AppCompatActivity {
         DocumentReference guestUpdatesRef = roomRef.collection("guestUpdates").document("gameStatus");
 
 
-        Log.d(TAG, "isHost! : " + isHost());
-        if (isHost()) // for the host
+
+        if (isHost(playerName, roomName)) // for the host
         {
             String guestUsername = getGuestUsername();
 
@@ -289,7 +289,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
 
     private void setListenerForGuestUpdates(String guestUsername, AlertDialog gameRequestDialog, DocumentReference guestUpdatesRef) {
-        guestUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        guestUpdatesListener = guestUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
                 if (error != null) {
@@ -318,7 +318,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
     }
 
     private void setListenerForHostUpdates(String hostUsername, AlertDialog gameRequestDialog, DocumentReference hostUpdatesRef, Vibrator v) {
-        hostUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        hostUpdatesListener = hostUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
                 if (error != null) {
@@ -358,7 +358,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
             //deprecated in API 26
             v.vibrate(500);
         }
-        if (!isHost()) // delete the guest's room when starting a game
+        if (!isHost(playerName, roomName)) // delete the guest's room when starting a game
         {
             DocumentReference guestRoomRef = fStore.collection(ROOMSPATH).document(playerName);
             guestRoomRef.delete();
@@ -438,7 +438,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
     }
 
     public void disconnectUser() {
-        if (isHost())
+        if (isHost(playerName, roomName))
             if (!getIsInGame())
                 roomRef.delete();
 
@@ -465,7 +465,20 @@ public class WaitingRoomActivity extends AppCompatActivity {
         //super.onBackPressed(); // this disables back button by not calling the super function
     }
 
-//    @Override
+    @Override
+    protected void onStop() {
+        if (roomListener != null)
+            roomListener.remove();
+        if (guestUpdatesListener != null)
+            guestUpdatesListener.remove();
+        if (hostUpdatesListener != null)
+            hostUpdatesListener.remove();
+        if (roomsUpdaterView != null)
+            roomsUpdaterView.remove();
+        super.onStop();
+    }
+
+    //    @Override
 //    protected void onPause() {
 //        // remove player from database because he is no longer online.
 //        Log.d(TAG, "ONSTOP: USER DISCONNECTED");

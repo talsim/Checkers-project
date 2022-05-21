@@ -3,10 +3,12 @@ package com.example.checkers;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import static com.example.checkers.DatabaseUtils.addDataToDatabase;
 
@@ -40,7 +42,10 @@ import java.util.Map;
 public class GameActivity extends AppCompatActivity {
 
     public static final ImageView[][] imageViewsTiles = new ImageView[Board.SIZE][Board.SIZE]; // all the squares which contain the actual pieces (reference from the xml)
+    public static final String TAG = "GameActivity";
     protected Board board;
+    public static ListenerRegistration guestMovesUpdatesListener;
+    public static ListenerRegistration hostMovesUpdatesListener;
 
 
     @Override
@@ -149,4 +154,20 @@ public class GameActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+    @Override
+    protected void onStop() {
+        if (guestMovesUpdatesListener != null)
+        {
+            Log.d(TAG, "removing guestMovesUpdateslistener thing! :) not null");
+            guestMovesUpdatesListener.remove();
+        }
+
+        if (hostMovesUpdatesListener != null)
+        {
+            Log.d(TAG, "removing hostMovesUpdatesListener thing! :) not null");
+            hostMovesUpdatesListener.remove();
+        }
+
+        super.onStop();
+    }
 }

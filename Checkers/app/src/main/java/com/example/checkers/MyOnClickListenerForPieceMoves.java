@@ -13,8 +13,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import static com.example.checkers.DatabaseUtils.addDataToDatabase;
+import static com.example.checkers.DatabaseUtils.isHost;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,9 +32,12 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
     private final String playerName;
     public final CollectionReference gameplayRef;
     public DocumentReference roomRef;
+//    public ListenerRegistration guestMovesUpdatesListener;
+//    public ListenerRegistration hostMovesUpdatesListener;
 
 
     public MyOnClickListenerForPieceMoves(Piece piece, Board board, String roomName, String playerName) {
+
         this.piece = piece;
         this.board = board;
         this.roomName = roomName;
@@ -71,209 +76,264 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
 //        });
 
 
-//        if (isHost()) // for the host (for black)
-//        {
-//            if (isBlack && getIsBlackTurn()) {
-//                highlightPiece(true, isKing, pieceImage);
-//                if (!isKing) {
-//                    /* -------------------------- left diagonal -------------------------- */
-//                    if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
-//                        ImageView leftPieceImage = GameActivity.imageViewsTiles[x - 1][y - 1];
-//                        lastUsedImageViews[0] = leftPieceImage;
-//                        Move leftMove = new Move(x, y, x - 1, y - 1);
-//                        leftDiagonal(leftMove, leftPieceImage, true, false, false, 0);
-//                    }
+        if (isHost(playerName, roomName)) // for the host (for black)
+        {
+            if (isBlack && getIsBlackTurn()) {
+                highlightPiece(true, isKing, pieceImage);
+                if (!isKing) {
+                    /* -------------------------- left diagonal -------------------------- */
+                    if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
+                        ImageView leftPieceImage = GameActivity.imageViewsTiles[x - 1][y - 1];
+                        lastUsedImageViews[0] = leftPieceImage;
+                        Move leftMove = new Move(x, y, x - 1, y - 1);
+                        leftDiagonal(leftMove, leftPieceImage, true, false, false, 0);
+                    }
+
+                    /* -------------------------- left-JUMP diagonal -------------------------- */
+                    if (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack()) {
+                        ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y - 2];
+                        lastUsedImageViews[1] = leftJumpPieceImage;
+                        Move leftJumpMove = new Move(x, y, x - 2, y - 2);
+                        leftDiagonal(leftJumpMove, leftJumpPieceImage, true, false, true, x - 1);
+                    }
+
+                    /* -------------------------- right diagonal -------------------------- */
+                    if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
+                        Move rightMove = new Move(x, y, x - 1, y + 1);
+                        ImageView rightPieceImage = GameActivity.imageViewsTiles[x - 1][y + 1];
+                        lastUsedImageViews[2] = rightPieceImage;
+                        rightDiagonal(rightMove, rightPieceImage, true, false, false, 0);
+                    }
+
+                    /* -------------------------- right-JUMP diagonal -------------------------- */
+                    if (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack()) {
+                        ImageView rightJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y + 2];
+                        lastUsedImageViews[3] = rightJumpPieceImage;
+                        Move rightJumpMove = new Move(x, y, x - 2, y + 2);
+                        rightDiagonal(rightJumpMove, rightJumpPieceImage, true, false, true, x - 1);
+                    }
+                } else
+                    kingMove(x, y, true);
+            } else {
+                // it is red's turn now.
+                // set a listener for red's moves (guest moves) and move the red pieces accordingly
+                DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
+                GameActivity.guestMovesUpdatesListener = guestMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                        if (error != null) {
+                            Log.w(TAG, "Listen failed.", error);
+                            return;
+                        }
+                        if (snapshot != null && snapshot.exists()) {
+
+                            String endAxis = (String) snapshot.get("endAxis"); // parsing the axis in the format: "X-Y"
+                            String startAxis = (String) snapshot.get("startAxis"); // parsing the axis in the format: "X-Y"
+                            Boolean isJump = (Boolean) snapshot.get("isJump");
+                            Boolean isKingDb = (Boolean) snapshot.get("isKing");
+                            if (endAxis != null && startAxis != null && isKingDb != null) {
+                                int startX = Integer.parseInt(startAxis.split("-")[0]);
+                                int startY = Integer.parseInt(startAxis.split("-")[1]);
+                                int endX = Integer.parseInt(endAxis.split("-")[0]);
+                                int endY = Integer.parseInt(endAxis.split("-")[1]);
+                                Move move = new Move(startX, startY, endX, endY);
+                                move.perform(false, isKingDb); // ***** change isKing here, and also update in uploadNewPieceLocation to add if the piece is king
+
+                                // updating boardArray
+                                board.getBoardArray()[endX][endY] = new Piece(endX, endY, false, isKingDb); // ***** change isKing here
+                                board.getBoardArray()[startX][startY] = null; // remove old piece
+
+                                if (isJump != null) {
+                                    if (isJump) { // if true: there was a jump, remove the jumped piece
+                                        String jumpedAxis = (String) snapshot.get("jumpedAxis"); // // parsing the axis in the format: "X-Y"
+                                        if (jumpedAxis != null) {
+                                            int jumpedX = Integer.parseInt(jumpedAxis.split("-")[0]);
+                                            int jumpedY = Integer.parseInt(jumpedAxis.split("-")[1]);
+
+                                            GameActivity.imageViewsTiles[jumpedX][jumpedY].setImageResource(android.R.color.transparent);
+                                            GameActivity.imageViewsTiles[jumpedX][jumpedY].setClickable(false);
+                                            board.getBoardArray()[jumpedX][jumpedY] = null;
+                                        } else
+                                            Log.d(TAG, "Couldn't get jumpedAxis");
+                                    }
+
+                                }
+                            }
+
+                        }
+                    }
+                });
+
+            }
+
+        } else // for the guest (for red)
+        {
+            if (!isBlack && !getIsBlackTurn()) {
+                highlightPiece(false, isKing, pieceImage);
+                if (!isKing) {
+                    /* -------------------------- left diagonal -------------------------- */
+                    if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
+                        Move leftMove = new Move(x, y, x + 1, y - 1);
+                        ImageView leftPieceImage = GameActivity.imageViewsTiles[x + 1][y - 1];
+                        lastUsedImageViews[4] = leftPieceImage;
+                        leftDiagonal(leftMove, leftPieceImage, false, false, false, 0);
+                    }
+
+                    /* -------------------------- left-JUMP diagonal -------------------------- */
+
+                    if (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && board.getBoardArray()[x + 1][y - 1].isBlack()) {
+                        ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y - 2];
+                        lastUsedImageViews[5] = leftJumpPieceImage;
+                        Move leftJumpMove = new Move(x, y, x + 2, y - 2);
+                        leftDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
+                    }
+
+                    /* -------------------------- right diagonal -------------------------- */
+                    if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
+                        Move rightMove = new Move(x, y, x + 1, y + 1);
+                        ImageView rightPieceImage = GameActivity.imageViewsTiles[x + 1][y + 1];
+                        lastUsedImageViews[6] = rightPieceImage;
+                        rightDiagonal(rightMove, rightPieceImage, false, false, false, 0);
+                    }
+
+                    /* -------------------------- right-JUMP diagonal -------------------------- */
+                    if (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && board.getBoardArray()[x + 1][y + 1].isBlack()) {
+                        ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y + 2];
+                        lastUsedImageViews[7] = leftJumpPieceImage;
+                        Move leftJumpMove = new Move(x, y, x + 2, y + 2);
+                        rightDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
+                    }
+
+                } else
+                    kingMove(x, y, false);
+            } else {
+                // it is black's turn now.
+                // set a listener for black's moves (host pieces) and move the black pieces accordingly
+                DocumentReference hostMovesUpdatesRef = gameplayRef.document("hostMovesUpdates");
+                GameActivity.hostMovesUpdatesListener = hostMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                        if (error != null) {
+                            Log.w(TAG, "Listen failed.", error);
+                            return;
+                        }
+                        if (snapshot != null && snapshot.exists()) {
+                            String endAxis = (String) snapshot.get("endAxis"); // parsing the axis by the format: "X-Y"
+                            String startAxis = (String) snapshot.get("startAxis"); // parsing the axis by the format: "X-Y"
+                            Boolean isJump = (Boolean) snapshot.get("isJump");
+                            Boolean isKingDb = (Boolean) snapshot.get("isKing");
+                            if (endAxis != null && startAxis != null && isKingDb != null) {
+                                int startX = Integer.parseInt(startAxis.split("-")[0]);
+                                int startY = Integer.parseInt(startAxis.split("-")[1]);
+                                int endX = Integer.parseInt(endAxis.split("-")[0]);
+                                int endY = Integer.parseInt(endAxis.split("-")[1]);
+                                Move move = new Move(startX, startY, endX, endY);
+                                move.perform(true, isKingDb);
+
+                                // updating boardArray
+                                board.getBoardArray()[endX][endY] = new Piece(endX, endY, true, isKingDb); // ***** change isKing here
+                                board.getBoardArray()[startX][startY] = null; // remove old piece
+
+                                if (isJump != null) {
+                                    if (isJump) {
+                                        String jumpedAxis = (String) snapshot.get("jumpedAxis"); // // parsing the axis in the format: "X-Y"
+                                        if (jumpedAxis != null) {
+                                            int jumpedX = Integer.parseInt(jumpedAxis.split("-")[0]);
+                                            int jumpedY = Integer.parseInt(jumpedAxis.split("-")[1]);
+
+                                            GameActivity.imageViewsTiles[jumpedX][jumpedY].setImageResource(android.R.color.transparent);
+                                            GameActivity.imageViewsTiles[jumpedX][jumpedY].setClickable(false);
+                                            board.getBoardArray()[jumpedX][jumpedY] = null;
+                                        } else
+                                            Log.d(TAG, "Couldn't get jumpedAxis");
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                });
+
+            }
+        }
+
 //
-//                    /* -------------------------- left-JUMP diagonal -------------------------- */
-//                    if (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack()) {
-//                        ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y - 2];
-//                        lastUsedImageViews[1] = leftJumpPieceImage;
-//                        Move leftJumpMove = new Move(x, y, x - 2, y - 2);
-//                        leftDiagonal(leftJumpMove, leftJumpPieceImage, true, false, true, x - 1);
-//                    }
+//        if (isBlack) {
+//            highlightPiece(true, isKing, pieceImage);
+//            if (!isKing) {
+//                /* -------------------------- left diagonal -------------------------- */
+//                if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
+//                    ImageView leftPieceImage = GameActivity.imageViewsTiles[x - 1][y - 1];
+//                    lastUsedImageViews[0] = leftPieceImage;
+//                    Move leftMove = new Move(x, y, x - 1, y - 1);
+//                    leftDiagonal(leftMove, leftPieceImage, true, false, false, 0);
+//                }
 //
-//                    /* -------------------------- right diagonal -------------------------- */
-//                    if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
-//                        Move rightMove = new Move(x, y, x - 1, y + 1);
-//                        ImageView rightPieceImage = GameActivity.imageViewsTiles[x - 1][y + 1];
-//                        lastUsedImageViews[2] = rightPieceImage;
-//                        rightDiagonal(rightMove, rightPieceImage, true, false, false, 0);
-//                    }
+//                /* -------------------------- left-JUMP diagonal -------------------------- */
+//                if (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack()) {
+//                    ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y - 2];
+//                    lastUsedImageViews[1] = leftJumpPieceImage;
+//                    Move leftJumpMove = new Move(x, y, x - 2, y - 2);
+//                    leftDiagonal(leftJumpMove, leftJumpPieceImage, true, false, true, x - 1);
+//                }
 //
-//                    /* -------------------------- right-JUMP diagonal -------------------------- */
-//                    if (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack()) {
-//                        ImageView rightJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y + 2];
-//                        lastUsedImageViews[3] = rightJumpPieceImage;
-//                        Move rightJumpMove = new Move(x, y, x - 2, y + 2);
-//                        rightDiagonal(rightJumpMove, rightJumpPieceImage, true, false, true, x - 1);
-//                    }
-//                } else
-//                    kingMove(x, y, true);
-//            } else {
-//                // it is red's turn now.
-//                // set a listener for red's moves (guest moves) and move the red pieces accordingly
-//                DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
-//                guestMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-//                    @Override
-//                    public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
-//                        if (error != null) {
-//                            Log.w(TAG, "Listen failed.", error);
-//                            return;
-//                        }
-//                        if (snapshot != null && snapshot.exists()) {
-//                            String endAxis = (String) snapshot.get("endAxis"); // parsing the axis by the format: "X-Y"
-//                            String startAxis = (String) snapshot.get("startAxis"); // parsing the axis by the format: "X-Y"
-//                            if (endAxis != null && startAxis != null)
-//                            {
-//                                int startX = Integer.parseInt(startAxis.split("-")[0]);
-//                                int startY = Integer.parseInt(startAxis.split("-")[1]);
-//                                int endX = Integer.parseInt(startAxis.split("-")[0]);
-//                                int endY = Integer.parseInt(startAxis.split("-")[1]);
-//                                Move move = new Move(startX, startY, endX, endY);
-//                                move.perform(false, false); // ***** change isKing here, and also update in uploadNewPieceLocation to add if the piece is king
+//                /* -------------------------- right diagonal -------------------------- */
+//                if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
+//                    Move rightMove = new Move(x, y, x - 1, y + 1);
+//                    ImageView rightPieceImage = GameActivity.imageViewsTiles[x - 1][y + 1];
+//                    lastUsedImageViews[2] = rightPieceImage;
+//                    rightDiagonal(rightMove, rightPieceImage, true, false, false, 0);
+//                }
 //
-//                                // updating boardArray
-//                                board.getBoardArray()[endX][endY] = new Piece(rightPieceImage, endX, endY, false, false); // ***** change isKing here
-//                                board.getBoardArray()[startX][startY] = null; // remove old piece
-//                                /*if (isJump) {
-//                                    int jumpedPieceY = startY + 1;
-//
-//                                    // delete the jumped piece
-//                                    GameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setImageResource(android.R.color.transparent);
-//                                    GameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setClickable(false);
-//                                    board.getBoardArray()[jumpedPieceX][jumpedPieceY] = null;
-//                                }*/
-//                            }
-//
-//                        }
-//                    }
-//                });
-//
-//            }
-//
-//        } else // for the guest (for red)
-//        {
-//            if (!isBlack && !getIsBlackTurn()) {
-//                highlightPiece(false, isKing, pieceImage);
-//                if (!isKing) {
-//                    /* -------------------------- left diagonal -------------------------- */
-//                    if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
-//                        Move leftMove = new Move(x, y, x + 1, y - 1);
-//                        ImageView leftPieceImage = GameActivity.imageViewsTiles[x + 1][y - 1];
-//                        lastUsedImageViews[4] = leftPieceImage;
-//                        leftDiagonal(leftMove, leftPieceImage, false, false, false, 0);
-//                    }
-//
-//                    /* -------------------------- left-JUMP diagonal -------------------------- */
-//
-//                    if (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && board.getBoardArray()[x + 1][y - 1].isBlack()) {
-//                        ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y - 2];
-//                        lastUsedImageViews[5] = leftJumpPieceImage;
-//                        Move leftJumpMove = new Move(x, y, x + 2, y - 2);
-//                        leftDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
-//                    }
-//
-//                    /* -------------------------- right diagonal -------------------------- */
-//                    if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
-//                        Move rightMove = new Move(x, y, x + 1, y + 1);
-//                        ImageView rightPieceImage = GameActivity.imageViewsTiles[x + 1][y + 1];
-//                        lastUsedImageViews[6] = rightPieceImage;
-//                        rightDiagonal(rightMove, rightPieceImage, false, false, false, 0);
-//                    }
-//
-//                    /* -------------------------- right-JUMP diagonal -------------------------- */
-//                    if (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && board.getBoardArray()[x + 1][y + 1].isBlack()) {
-//                        ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y + 2];
-//                        lastUsedImageViews[7] = leftJumpPieceImage;
-//                        Move leftJumpMove = new Move(x, y, x + 2, y + 2);
-//                        rightDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
-//                    }
-//
-//                } else
-//                    kingMove(x, y, false);
-//            } else {
-//                // it is black's turn now.
-//                // set a listener for black's moves (host pieces) and move the black pieces accordingly
-//            }
+//                /* -------------------------- right-JUMP diagonal -------------------------- */
+//                if (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack()) {
+//                    ImageView rightJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y + 2];
+//                    lastUsedImageViews[3] = rightJumpPieceImage;
+//                    Move rightJumpMove = new Move(x, y, x - 2, y + 2);
+//                    rightDiagonal(rightJumpMove, rightJumpPieceImage, true, false, true, x - 1);
+//                }
+//            } else
+//                kingMove(x, y, true);
 //        }
-
-
-        if (isBlack) {
-            highlightPiece(true, isKing, pieceImage);
-            if (!isKing) {
-                /* -------------------------- left diagonal -------------------------- */
-                if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
-                    ImageView leftPieceImage = GameActivity.imageViewsTiles[x - 1][y - 1];
-                    lastUsedImageViews[0] = leftPieceImage;
-                    Move leftMove = new Move(x, y, x - 1, y - 1);
-                    leftDiagonal(leftMove, leftPieceImage, true, false, false, 0);
-                }
-
-                /* -------------------------- left-JUMP diagonal -------------------------- */
-                if (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack()) {
-                    ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y - 2];
-                    lastUsedImageViews[1] = leftJumpPieceImage;
-                    Move leftJumpMove = new Move(x, y, x - 2, y - 2);
-                    leftDiagonal(leftJumpMove, leftJumpPieceImage, true, false, true, x - 1);
-                }
-
-                /* -------------------------- right diagonal -------------------------- */
-                if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
-                    Move rightMove = new Move(x, y, x - 1, y + 1);
-                    ImageView rightPieceImage = GameActivity.imageViewsTiles[x - 1][y + 1];
-                    lastUsedImageViews[2] = rightPieceImage;
-                    rightDiagonal(rightMove, rightPieceImage, true, false, false, 0);
-                }
-
-                /* -------------------------- right-JUMP diagonal -------------------------- */
-                if (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack()) {
-                    ImageView rightJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y + 2];
-                    lastUsedImageViews[3] = rightJumpPieceImage;
-                    Move rightJumpMove = new Move(x, y, x - 2, y + 2);
-                    rightDiagonal(rightJumpMove, rightJumpPieceImage, true, false, true, x - 1);
-                }
-            } else
-                kingMove(x, y, true);
-        }
-        else if (!isBlack) {
-            highlightPiece(false, isKing, pieceImage);
-            if (!isKing) {
-                /* -------------------------- left diagonal -------------------------- */
-                if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
-                    Move leftMove = new Move(x, y, x + 1, y - 1);
-                    ImageView leftPieceImage = GameActivity.imageViewsTiles[x + 1][y - 1];
-                    lastUsedImageViews[4] = leftPieceImage;
-                    leftDiagonal(leftMove, leftPieceImage, false, false, false, 0);
-                }
-
-                /* -------------------------- left-JUMP diagonal -------------------------- */
-
-                if (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && board.getBoardArray()[x + 1][y - 1].isBlack()) {
-                    ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y - 2];
-                    lastUsedImageViews[5] = leftJumpPieceImage;
-                    Move leftJumpMove = new Move(x, y, x + 2, y - 2);
-                    leftDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
-                }
-
-                /* -------------------------- right diagonal -------------------------- */
-                if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
-                    Move rightMove = new Move(x, y, x + 1, y + 1);
-                    ImageView rightPieceImage = GameActivity.imageViewsTiles[x + 1][y + 1];
-                    lastUsedImageViews[6] = rightPieceImage;
-                    rightDiagonal(rightMove, rightPieceImage, false, false, false, 0);
-                }
-
-                /* -------------------------- right-JUMP diagonal -------------------------- */
-                if (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && board.getBoardArray()[x + 1][y + 1].isBlack()) {
-                    ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y + 2];
-                    lastUsedImageViews[7] = leftJumpPieceImage;
-                    Move leftJumpMove = new Move(x, y, x + 2, y + 2);
-                    rightDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
-                }
-
-            } else
-                kingMove(x, y, false);
-        }
+//        else if (!isBlack) {
+//            highlightPiece(false, isKing, pieceImage);
+//            if (!isKing) {
+//                /* -------------------------- left diagonal -------------------------- */
+//                if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
+//                    Move leftMove = new Move(x, y, x + 1, y - 1);
+//                    ImageView leftPieceImage = GameActivity.imageViewsTiles[x + 1][y - 1];
+//                    lastUsedImageViews[4] = leftPieceImage;
+//                    leftDiagonal(leftMove, leftPieceImage, false, false, false, 0);
+//                }
+//
+//                /* -------------------------- left-JUMP diagonal -------------------------- */
+//
+//                if (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && board.getBoardArray()[x + 1][y - 1].isBlack()) {
+//                    ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y - 2];
+//                    lastUsedImageViews[5] = leftJumpPieceImage;
+//                    Move leftJumpMove = new Move(x, y, x + 2, y - 2);
+//                    leftDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
+//                }
+//
+//                /* -------------------------- right diagonal -------------------------- */
+//                if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
+//                    Move rightMove = new Move(x, y, x + 1, y + 1);
+//                    ImageView rightPieceImage = GameActivity.imageViewsTiles[x + 1][y + 1];
+//                    lastUsedImageViews[6] = rightPieceImage;
+//                    rightDiagonal(rightMove, rightPieceImage, false, false, false, 0);
+//                }
+//
+//                /* -------------------------- right-JUMP diagonal -------------------------- */
+//                if (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && board.getBoardArray()[x + 1][y + 1].isBlack()) {
+//                    ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y + 2];
+//                    lastUsedImageViews[7] = leftJumpPieceImage;
+//                    Move leftJumpMove = new Move(x, y, x + 2, y + 2);
+//                    rightDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
+//                }
+//
+//            } else
+//                kingMove(x, y, false);
+//        }
     }
 
     private void kingMove(int x, int y, boolean isBlack) {
@@ -393,11 +453,10 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 int startY = rightMove.getStartY();
 
                 // updating boardArray
-                board.getBoardArray()[endX][endY] = new Piece(/*rightPieceImage,*/ endX, endY, isBlack, isKing);
+                board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, isKing);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
+                int jumpedPieceY = startY + 1;
                 if (isJump) {
-                    int jumpedPieceY = startY + 1;
-
                     // delete the jumped piece
                     GameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setImageResource(android.R.color.transparent);
                     GameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setClickable(false);
@@ -423,13 +482,11 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                     }
                 });
 
-                /*isBlackTurn = !isBlack;*/
-
                 // updating next turn - passing the turn to the other player
                 updateBlackTurnInDb(!isBlack);
 
                 // upload new piece location to db
-                uploadPieceLocationToDb();
+                uploadPieceLocationToDb(rightMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());
             }
         });
     }
@@ -449,9 +506,8 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 // updating boardArray
                 board.getBoardArray()[endX][endY] = new Piece(/*leftPieceImage,*/ endX, endY, isBlack, isKing);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
+                int jumpedPieceY = startY - 1;
                 if (isJump) {
-                    int jumpedPieceY = startY - 1;
-
                     // delete the jumped piece
                     GameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setImageResource(android.R.color.transparent);
                     GameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setClickable(false);
@@ -477,19 +533,31 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                     }
                 });
 
-                /*isBlackTurn = !isBlack;*/
-
                 // updating next turn - passing the turn to the other player
                 updateBlackTurnInDb(!isBlack);
 
                 // upload new piece location to db
-                uploadPieceLocationToDb();
+                uploadPieceLocationToDb(leftMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());
             }
         });
     }
 
-    private void uploadPieceLocationToDb() {
-
+    private void uploadPieceLocationToDb(Move move, boolean isJump, int jumpX, int jumpY, boolean isKing) {
+        DocumentReference documentReference;
+        if (isHost(playerName, roomName))
+            documentReference = gameplayRef.document("hostMovesUpdates"); // for host updates
+        else
+            documentReference = gameplayRef.document("guestMovesUpdates"); // for guest updates
+        Map<String, Object> updates = new HashMap<>();
+        String startAxis = move.getStartX() + "-" + move.getStartY();
+        String endAxis = move.getEndX() + "-" + move.getEndY();
+        updates.put("startAxis", startAxis);
+        updates.put("endAxis", endAxis);
+        updates.put("isKing", isKing);
+        updates.put("isJump", isJump);
+        if (isJump)
+            updates.put("jumpedAxis", jumpX + "-" + jumpY);
+        addDataToDatabase(updates, documentReference);
     }
 
     public void isGameOver() {
@@ -609,10 +677,6 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         }
         Log.d(TAG, "Error getting document: ", getTurn.getException());
         throw new IllegalStateException("couldn't get isBlackTurn from db");
-    }
-
-    private boolean isHost() {
-        return this.playerName.equals(this.roomName);
     }
 
     private void updateBlackTurnInDb(boolean blackTurn) {
