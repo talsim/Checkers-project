@@ -1,5 +1,7 @@
 package com.example.checkers;
 
+import static com.example.checkers.DatabaseUtils.addDataToDatabase;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -118,7 +120,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
     }
 
-    private boolean getIsHost() {
+    private boolean isHost() {
         return playerName.equals(roomName);
     }
 
@@ -150,6 +152,8 @@ public class WaitingRoomActivity extends AppCompatActivity {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 /*
+                            ** pseudo-code **
+
                  if (only host in room)
                       just ignore it
                  else    // guest and host is in room now
@@ -180,22 +184,21 @@ public class WaitingRoomActivity extends AppCompatActivity {
         String hostUsername = roomName;
         Map<String, Object> gameRequestData = new HashMap<>();
         AlertDialog gameRequestDialog;
-        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(WaitingRoomActivity.this, AlertDialog.THEME_HOLO_LIGHT);
+        gameRequestDialogBuilder.setTitle("Challenge Request");
+        gameRequestDialogBuilder.setCancelable(false);
+
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         DocumentReference hostUpdatesRef = roomRef.collection("hostUpdates").document("gameStatus");
         DocumentReference guestUpdatesRef = roomRef.collection("guestUpdates").document("gameStatus");
 
-        Log.d(TAG, "isHost! : " + getIsHost());
-        if (getIsHost()) // for the host
+
+        Log.d(TAG, "isHost! : " + isHost());
+        if (isHost()) // for the host
         {
-            String guestUsername = getGuestUsername(); // get from db *********
+            String guestUsername = getGuestUsername();
 
-
-            Log.d(TAG, "CREATING BUILDER FOR HOST");
-            AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(WaitingRoomActivity.this, AlertDialog.THEME_HOLO_LIGHT);
-            gameRequestDialogBuilder.setTitle("Challenge Request");
-            gameRequestDialogBuilder.setCancelable(false);
             gameRequestDialogBuilder.setMessage("You've been challenged by " + guestUsername + "!");
-
             gameRequestDialogBuilder.setPositiveButton("ACCEPT", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -206,7 +209,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     addDataToDatabase(gameRequestData, hostUpdatesRef);
 
                     // LET'S PLAYYYYYY!!!!!!!!!
-                    startGame(v);
+                    startGame(vibrator);
                 }
             });
             gameRequestDialogBuilder.setNegativeButton("DECLINE", new DialogInterface.OnClickListener() {
@@ -235,11 +238,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
         } else // for the guest
         {
-            AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(WaitingRoomActivity.this, AlertDialog.THEME_HOLO_LIGHT);
-            gameRequestDialogBuilder.setTitle("Challenge Request");
             gameRequestDialogBuilder.setMessage("Challenging " + hostUsername + "...");
-            gameRequestDialogBuilder.setCancelable(false);
-
 
             gameRequestDialogBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
                 @Override
@@ -266,13 +265,14 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
 
             // listen for host response
-            setListenerForHostUpdates(hostUsername, gameRequestDialog, hostUpdatesRef, v);
+            setListenerForHostUpdates(hostUsername, gameRequestDialog, hostUpdatesRef, vibrator);
         }
 
 
         gameRequestDialog.show();
 
     }
+
     private String getGuestUsername() {
         Task<DocumentSnapshot> getGuest = roomRef.get();
         while (!getGuest.isComplete()) {
@@ -350,8 +350,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
     }
 
-    private void startGame(Vibrator v)
-    {
+    private void startGame(Vibrator v) {
         // Vibrate for 500 milliseconds
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
@@ -359,34 +358,17 @@ public class WaitingRoomActivity extends AppCompatActivity {
             //deprecated in API 26
             v.vibrate(500);
         }
-        if (!getIsHost()) // delete the guest's room when starting a game
+        if (!isHost()) // delete the guest's room when starting a game
         {
             DocumentReference guestRoomRef = fStore.collection(ROOMSPATH).document(playerName);
             guestRoomRef.delete();
         }
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
         intent.putExtra("roomName", roomName);
+        intent.putExtra("playerName", playerName);
         startActivity(intent);
     }
 
-
-    private void addDataToDatabase(Map<String, Object> userData, DocumentReference docRef) {
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        docRef.update(userData);
-                    } else {
-                        docRef.set(userData);
-                    }
-                } else {
-                    Log.d(TAG, "Failed with: ", task.getException());
-                }
-            }
-        });
-    }
 
     public void initNavHeader() {
         toolbar = findViewById(R.id.toolBar);
@@ -456,7 +438,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
     }
 
     public void disconnectUser() {
-        if (getIsHost())
+        if (isHost())
             if (!getIsInGame())
                 roomRef.delete();
 

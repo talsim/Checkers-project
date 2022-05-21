@@ -4,25 +4,41 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import androidx.annotation.Nullable;
+
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+
+import static com.example.checkers.DatabaseUtils.addDataToDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
 
     public static final String TAG = "MyListenerForPieceMoves";
     private static ImageView[] lastUsedImageViews; // for removing the setOnClickListeners that we set and the player did not choose, so there will not be hanging listeners.
-    public static boolean isBlackTurn;
+    //public /*static*/ boolean isBlackTurn;
     private final Piece piece;
     private final Board board;
+    private final String roomName;
+    private final String playerName;
+    public final CollectionReference gameplayRef;
     public DocumentReference roomRef;
 
-    public MyOnClickListenerForPieceMoves(Piece piece, Board board, String roomName) {
+
+    public MyOnClickListenerForPieceMoves(Piece piece, Board board, String roomName, String playerName) {
         this.piece = piece;
         this.board = board;
+        this.roomName = roomName;
+        this.playerName = playerName;
         this.roomRef = FirebaseFirestore.getInstance().collection(WaitingRoomActivity.ROOMSPATH).document(roomName);
-        isBlackTurn = true; // Black starts (black is the host)
+        this.gameplayRef = roomRef.collection("gameplay");
         lastUsedImageViews = new ImageView[10];
     }
 
@@ -36,8 +52,153 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         clearPossibleLocationMarkers();
         unsetOnClickLastImageViews();
 
-        // for black
-        if (isBlack && isBlackTurn) {
+//        gameplayRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//            @Override
+//            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+//                if (error != null) {
+//                    Log.w(TAG, "Listen failed.", error);
+//                    return;
+//                }
+//                if (snapshot != null && snapshot.exists()) {
+//                    Boolean isBlackTurnFromDb = (Boolean) snapshot.get("isBlackTurn");
+//                    if (isBlackTurnFromDb != null){
+//
+//                    }
+//
+//                }
+//
+//            }
+//        });
+
+
+//        if (isHost()) // for the host (for black)
+//        {
+//            if (isBlack && getIsBlackTurn()) {
+//                highlightPiece(true, isKing, pieceImage);
+//                if (!isKing) {
+//                    /* -------------------------- left diagonal -------------------------- */
+//                    if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
+//                        ImageView leftPieceImage = GameActivity.imageViewsTiles[x - 1][y - 1];
+//                        lastUsedImageViews[0] = leftPieceImage;
+//                        Move leftMove = new Move(x, y, x - 1, y - 1);
+//                        leftDiagonal(leftMove, leftPieceImage, true, false, false, 0);
+//                    }
+//
+//                    /* -------------------------- left-JUMP diagonal -------------------------- */
+//                    if (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack()) {
+//                        ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y - 2];
+//                        lastUsedImageViews[1] = leftJumpPieceImage;
+//                        Move leftJumpMove = new Move(x, y, x - 2, y - 2);
+//                        leftDiagonal(leftJumpMove, leftJumpPieceImage, true, false, true, x - 1);
+//                    }
+//
+//                    /* -------------------------- right diagonal -------------------------- */
+//                    if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
+//                        Move rightMove = new Move(x, y, x - 1, y + 1);
+//                        ImageView rightPieceImage = GameActivity.imageViewsTiles[x - 1][y + 1];
+//                        lastUsedImageViews[2] = rightPieceImage;
+//                        rightDiagonal(rightMove, rightPieceImage, true, false, false, 0);
+//                    }
+//
+//                    /* -------------------------- right-JUMP diagonal -------------------------- */
+//                    if (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack()) {
+//                        ImageView rightJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y + 2];
+//                        lastUsedImageViews[3] = rightJumpPieceImage;
+//                        Move rightJumpMove = new Move(x, y, x - 2, y + 2);
+//                        rightDiagonal(rightJumpMove, rightJumpPieceImage, true, false, true, x - 1);
+//                    }
+//                } else
+//                    kingMove(x, y, true);
+//            } else {
+//                // it is red's turn now.
+//                // set a listener for red's moves (guest moves) and move the red pieces accordingly
+//                DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
+//                guestMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//                    @Override
+//                    public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+//                        if (error != null) {
+//                            Log.w(TAG, "Listen failed.", error);
+//                            return;
+//                        }
+//                        if (snapshot != null && snapshot.exists()) {
+//                            String endAxis = (String) snapshot.get("endAxis"); // parsing the axis by the format: "X-Y"
+//                            String startAxis = (String) snapshot.get("startAxis"); // parsing the axis by the format: "X-Y"
+//                            if (endAxis != null && startAxis != null)
+//                            {
+//                                int startX = Integer.parseInt(startAxis.split("-")[0]);
+//                                int startY = Integer.parseInt(startAxis.split("-")[1]);
+//                                int endX = Integer.parseInt(startAxis.split("-")[0]);
+//                                int endY = Integer.parseInt(startAxis.split("-")[1]);
+//                                Move move = new Move(startX, startY, endX, endY);
+//                                move.perform(false, false); // ***** change isKing here, and also update in uploadNewPieceLocation to add if the piece is king
+//
+//                                // updating boardArray
+//                                board.getBoardArray()[endX][endY] = new Piece(rightPieceImage, endX, endY, false, false); // ***** change isKing here
+//                                board.getBoardArray()[startX][startY] = null; // remove old piece
+//                                /*if (isJump) {
+//                                    int jumpedPieceY = startY + 1;
+//
+//                                    // delete the jumped piece
+//                                    GameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setImageResource(android.R.color.transparent);
+//                                    GameActivity.imageViewsTiles[jumpedPieceX][jumpedPieceY].setClickable(false);
+//                                    board.getBoardArray()[jumpedPieceX][jumpedPieceY] = null;
+//                                }*/
+//                            }
+//
+//                        }
+//                    }
+//                });
+//
+//            }
+//
+//        } else // for the guest (for red)
+//        {
+//            if (!isBlack && !getIsBlackTurn()) {
+//                highlightPiece(false, isKing, pieceImage);
+//                if (!isKing) {
+//                    /* -------------------------- left diagonal -------------------------- */
+//                    if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
+//                        Move leftMove = new Move(x, y, x + 1, y - 1);
+//                        ImageView leftPieceImage = GameActivity.imageViewsTiles[x + 1][y - 1];
+//                        lastUsedImageViews[4] = leftPieceImage;
+//                        leftDiagonal(leftMove, leftPieceImage, false, false, false, 0);
+//                    }
+//
+//                    /* -------------------------- left-JUMP diagonal -------------------------- */
+//
+//                    if (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && board.getBoardArray()[x + 1][y - 1].isBlack()) {
+//                        ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y - 2];
+//                        lastUsedImageViews[5] = leftJumpPieceImage;
+//                        Move leftJumpMove = new Move(x, y, x + 2, y - 2);
+//                        leftDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
+//                    }
+//
+//                    /* -------------------------- right diagonal -------------------------- */
+//                    if (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */) {
+//                        Move rightMove = new Move(x, y, x + 1, y + 1);
+//                        ImageView rightPieceImage = GameActivity.imageViewsTiles[x + 1][y + 1];
+//                        lastUsedImageViews[6] = rightPieceImage;
+//                        rightDiagonal(rightMove, rightPieceImage, false, false, false, 0);
+//                    }
+//
+//                    /* -------------------------- right-JUMP diagonal -------------------------- */
+//                    if (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && board.getBoardArray()[x + 1][y + 1].isBlack()) {
+//                        ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y + 2];
+//                        lastUsedImageViews[7] = leftJumpPieceImage;
+//                        Move leftJumpMove = new Move(x, y, x + 2, y + 2);
+//                        rightDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1);
+//                    }
+//
+//                } else
+//                    kingMove(x, y, false);
+//            } else {
+//                // it is black's turn now.
+//                // set a listener for black's moves (host pieces) and move the black pieces accordingly
+//            }
+//        }
+
+
+        if (isBlack) {
             highlightPiece(true, isKing, pieceImage);
             if (!isKing) {
                 /* -------------------------- left diagonal -------------------------- */
@@ -74,8 +235,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
             } else
                 kingMove(x, y, true);
         }
-        // for red
-        else if (!isBlack && !isBlackTurn) {
+        else if (!isBlack) {
             highlightPiece(false, isKing, pieceImage);
             if (!isKing) {
                 /* -------------------------- left diagonal -------------------------- */
@@ -233,7 +393,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 int startY = rightMove.getStartY();
 
                 // updating boardArray
-                board.getBoardArray()[endX][endY] = new Piece(rightPieceImage, endX, endY, isBlack, isKing);
+                board.getBoardArray()[endX][endY] = new Piece(/*rightPieceImage,*/ endX, endY, isBlack, isKing);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
                 if (isJump) {
                     int jumpedPieceY = startY + 1;
@@ -262,8 +422,14 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                         displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), rightPieceImage); // recursively show more move options
                     }
                 });
-                // pass the turn to the other player
-                isBlackTurn = !isBlack;
+
+                /*isBlackTurn = !isBlack;*/
+
+                // updating next turn - passing the turn to the other player
+                updateBlackTurnInDb(!isBlack);
+
+                // upload new piece location to db
+                uploadPieceLocationToDb();
             }
         });
     }
@@ -281,7 +447,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
 
 
                 // updating boardArray
-                board.getBoardArray()[endX][endY] = new Piece(leftPieceImage, endX, endY, isBlack, isKing);
+                board.getBoardArray()[endX][endY] = new Piece(/*leftPieceImage,*/ endX, endY, isBlack, isKing);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
                 if (isJump) {
                     int jumpedPieceY = startY - 1;
@@ -310,10 +476,20 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                         displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), leftPieceImage); // recursively show more move options
                     }
                 });
-                // pass the turn to the other player
-                isBlackTurn = !isBlack;
+
+                /*isBlackTurn = !isBlack;*/
+
+                // updating next turn - passing the turn to the other player
+                updateBlackTurnInDb(!isBlack);
+
+                // upload new piece location to db
+                uploadPieceLocationToDb();
             }
         });
+    }
+
+    private void uploadPieceLocationToDb() {
+
     }
 
     public void isGameOver() {
@@ -321,8 +497,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         int blackPieces = 0;
         for (int i = 0; i < Board.SIZE; i++)
             for (int j = 0; j < Board.SIZE; j++) {
-                if (board.getBoardArray()[i][j] != null)
-                {
+                if (board.getBoardArray()[i][j] != null) {
                     if (board.getBoardArray()[i][j].isBlack())
                         blackPieces++;
                     else
@@ -331,12 +506,15 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
             }
         if (redPieces == 0)
             gameOver(false);
-        else if(blackPieces == 0)
+        else if (blackPieces == 0)
             gameOver(true);
     }
 
     private void gameOver(boolean isBlack) {
         Log.d(TAG, "GAMEOVERRRRRRRRR*********");
+        // REMEMBER:
+        // remove listeners, each hostMovesUpdates and guestMovesUpdates.
+        // remove the guest from the room (like when the host declines or guest cancels in WaitingRoom)
     }
 
     private void highlightPiece(boolean isBlack, boolean isKing, ImageView piece) {
@@ -418,23 +596,29 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         }
     }
 
-    public boolean getIsBlackTurn(DocumentReference roomRef)
-    {
-        Task<DocumentSnapshot> getIsBlackTurn = roomRef.get();
-        while (!getIsBlackTurn.isComplete()) {
-            System.out.println("waiting for guestUsername");
+    private boolean getIsBlackTurn() {
+        Task<DocumentSnapshot> getTurn = gameplayRef.document("gameUpdates").get();
+        while (!getTurn.isComplete()) {
+            System.out.println("waiting for getIsBlackTurn");
         }
-        if (getIsBlackTurn.isSuccessful()) {
-            DocumentSnapshot isBlackTurnResult = getIsBlackTurn.getResult();
+        if (getTurn.isSuccessful()) {
+            DocumentSnapshot isBlackTurnResult = getTurn.getResult();
             Boolean val = (Boolean) isBlackTurnResult.get("isBlackTurn");
             if (val != null)
                 return (boolean) val;
         }
-
-        Log.d(TAG, "Error getting document: ", getIsBlackTurn.getException());
-        return false; // won't reach here because Log.d() will through an exception
-
+        Log.d(TAG, "Error getting document: ", getTurn.getException());
+        throw new IllegalStateException("couldn't get isBlackTurn from db");
     }
 
+    private boolean isHost() {
+        return this.playerName.equals(this.roomName);
+    }
+
+    private void updateBlackTurnInDb(boolean blackTurn) {
+        Map<String, Object> gameUpdates = new HashMap<>();
+        gameUpdates.put("isBlackTurn", blackTurn);
+        addDataToDatabase(gameUpdates, gameplayRef.document("gameUpdates"));
+    }
 }
 

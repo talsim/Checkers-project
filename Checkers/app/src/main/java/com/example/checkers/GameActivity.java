@@ -1,17 +1,17 @@
 package com.example.checkers;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
-import android.widget.ListView;
 
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import org.w3c.dom.Document;
+import static com.example.checkers.DatabaseUtils.addDataToDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 
@@ -46,31 +46,40 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_start_game);
+        setContentView(R.layout.activity_game);
 
-        String roomName;
+        String roomName = null;
+        String playerName = null;
         Bundle extras = getIntent().getExtras();
-        if (extras == null)
-            roomName = null;
-        else
+        if (extras != null)
+        {
             roomName = extras.getString("roomName");
+            playerName = extras.getString("playerName");
+        }
 
         initImageViews();
 
         board = new Board();
         initBoardAndDrawPieces(); // init board as well as drawing the black and red pieces on it
 
-        setOnClickForPieces(roomName);
+        // set initial value for isBlackTurn (host starts as black)
+        FirebaseFirestore fStore = FirebaseFirestore.getInstance();
+        DocumentReference gameUpdatesRef = fStore.collection(WaitingRoomActivity.ROOMSPATH).document(roomName).collection("gameplay").document("gameUpdates");
+        Map<String, Object> data = new HashMap<>();
+        data.put("isBlackTurn", true); //  - we can also randomize this init value to get the result of a random player to start the game (a possible feature)
+        addDataToDatabase(data, gameUpdatesRef);
+
+        setOnClickForPieces(roomName, playerName);
 
 
     }
 
-    public void setOnClickForPieces(String roomName) {
+    public void setOnClickForPieces(String roomName, String playerName) {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
                 Piece currPiece = board.getBoardArray()[x][y];
                 if (currPiece != null) {
-                    currPiece.getImage().setOnClickListener(new MyOnClickListenerForPieceMoves(currPiece, board, roomName));
+                    imageViewsTiles[x][y].setOnClickListener(new MyOnClickListenerForPieceMoves(currPiece, board, roomName, playerName));
                 }
 
             }
@@ -84,14 +93,14 @@ public class GameActivity extends AppCompatActivity {
                 // red pieces
                 if (x <= 2 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.red_piece);
-                    board.getBoardArray()[x][y] = new Piece(imageViewsTiles[x][y], x, y, false);
+                    board.getBoardArray()[x][y] = new Piece(x, y, false);
                 }
 
 
                 // black pieces
                 if (x >= 5 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.black_piece);
-                    board.getBoardArray()[x][y] = new Piece(imageViewsTiles[x][y], x, y, true);
+                    board.getBoardArray()[x][y] = new Piece(x, y, true);
                 }
 
             }

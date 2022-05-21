@@ -6,22 +6,19 @@ import android.widget.ImageView;
 
 public class Piece {
 
-    protected final ImageView image;
     protected int x;
     protected int y;
     protected boolean isKing;
     protected boolean isBlack; // color-wise
 
-    public Piece(ImageView image, int x, int y, boolean isBlack, boolean isKing) {
-        this.image = image;
+    public Piece(int x, int y, boolean isBlack, boolean isKing) {
         this.x = x;
         this.y = y;
         this.isBlack = isBlack;
         this.isKing = isKing;
     }
 
-    public Piece(ImageView image, int x, int y, boolean isBlack) {
-        this.image = image;
+    public Piece(int x, int y, boolean isBlack) {
         this.x = x;
         this.y = y;
         this.isBlack = isBlack;
@@ -96,14 +93,6 @@ public class Piece {
 
     public void setKing() {
         this.isKing = true;
-    }
-
-    public ImageView getImage() {
-        return image;
-    }
-
-    public void setImage(int imageID) {
-        this.image.setImageResource(imageID);
     }
 
     public int getX() {

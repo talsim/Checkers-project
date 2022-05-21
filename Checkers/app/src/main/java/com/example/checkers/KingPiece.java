@@ -4,8 +4,8 @@ import android.widget.ImageView;
 
 public class KingPiece extends Piece{
 
-    public KingPiece(ImageView image, int x, int y, boolean isBlack) {
-        super(image, x, y, isBlack);
+    public KingPiece(int x, int y, boolean isBlack) {
+        super(x, y, isBlack);
     }
 
     @Override
