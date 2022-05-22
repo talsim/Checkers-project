@@ -44,15 +44,12 @@ public class GameActivity extends AppCompatActivity {
     public static final ImageView[][] imageViewsTiles = new ImageView[Board.SIZE][Board.SIZE]; // all the squares which contain the actual pieces (reference from the xml)
     public static final String TAG = "GameActivity";
     protected Board board;
-    public static ListenerRegistration guestMovesUpdatesListener;
-    public static ListenerRegistration hostMovesUpdatesListener;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-
         String roomName = null;
         String playerName = null;
         Bundle extras = getIntent().getExtras();
@@ -152,22 +149,5 @@ public class GameActivity extends AppCompatActivity {
     public void onBackPressed() {
         // back button is not allowed here.
         super.onBackPressed();
-    }
-
-    @Override
-    protected void onStop() {
-        if (guestMovesUpdatesListener != null)
-        {
-            Log.d(TAG, "removing guestMovesUpdateslistener thing! :) not null");
-            guestMovesUpdatesListener.remove();
-        }
-
-        if (hostMovesUpdatesListener != null)
-        {
-            Log.d(TAG, "removing hostMovesUpdatesListener thing! :) not null");
-            hostMovesUpdatesListener.remove();
-        }
-
-        super.onStop();
     }
 }

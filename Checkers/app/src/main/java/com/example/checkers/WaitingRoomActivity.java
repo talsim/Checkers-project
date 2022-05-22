@@ -2,6 +2,7 @@ package com.example.checkers;
 
 import static com.example.checkers.DatabaseUtils.addDataToDatabase;
 import static com.example.checkers.DatabaseUtils.isHost;
+import static com.example.checkers.DatabaseUtils.getGuestUsername;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -66,6 +67,8 @@ public class WaitingRoomActivity extends AppCompatActivity {
     public ListView listView;
     public String playerName;
     public String roomName;
+    public DocumentReference hostUpdatesRef;
+    public DocumentReference guestUpdatesRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,32 +176,31 @@ public class WaitingRoomActivity extends AppCompatActivity {
                 if (getIsInGame()) // if a guest joined
                 {
                     Log.d(TAG, "sending request to host");
-                    gameInvitationRequestsHandler();
+                    gameInvitationHandler();
                 }
             }
         });
     }
 
-    private void gameInvitationRequestsHandler() {
+    private void gameInvitationHandler() {
         // *** check if this is the host's phone by comparing the roomName (which is the host's username) to playerName
         String hostUsername = roomName;
         Map<String, Object> gameRequestData = new HashMap<>();
         AlertDialog gameRequestDialog;
         AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(WaitingRoomActivity.this, AlertDialog.THEME_HOLO_LIGHT);
-        gameRequestDialogBuilder.setTitle("Challenge Request");
         gameRequestDialogBuilder.setCancelable(false);
 
         Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        DocumentReference hostUpdatesRef = roomRef.collection("hostUpdates").document("gameStatus");
-        DocumentReference guestUpdatesRef = roomRef.collection("guestUpdates").document("gameStatus");
-
+        hostUpdatesRef = roomRef.collection("hostUpdates").document("gameStatus");
+        guestUpdatesRef = roomRef.collection("guestUpdates").document("gameStatus");
 
 
         if (isHost(playerName, roomName)) // for the host
         {
-            String guestUsername = getGuestUsername();
+            String guestUsername = getGuestUsername(roomRef);
 
-            gameRequestDialogBuilder.setMessage("You've been challenged by " + guestUsername + "!");
+            gameRequestDialogBuilder.setMessage(guestUsername + " has challenged you to a game!");
+            gameRequestDialogBuilder.setTitle("You've Been Challenged");
             gameRequestDialogBuilder.setPositiveButton("ACCEPT", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -239,7 +241,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         } else // for the guest
         {
             gameRequestDialogBuilder.setMessage("Challenging " + hostUsername + "...");
-
+            gameRequestDialogBuilder.setTitle("Challenge Sent");
             gameRequestDialogBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -273,20 +275,6 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
     }
 
-    private String getGuestUsername() {
-        Task<DocumentSnapshot> getGuest = roomRef.get();
-        while (!getGuest.isComplete()) {
-            System.out.println("waiting for guestUsername");
-        }
-        if (getGuest.isSuccessful()) {
-            DocumentSnapshot guestUsernameDoc = getGuest.getResult();
-            return (String) guestUsernameDoc.get("guest");
-        } else
-            Log.d(TAG, "Error getting document: ", getGuest.getException());
-
-        return "*GUEST*"; // couldn't get the guest username
-    }
-
 
     private void setListenerForGuestUpdates(String guestUsername, AlertDialog gameRequestDialog, DocumentReference guestUpdatesRef) {
         guestUpdatesListener = guestUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -301,7 +289,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     if (isCanceled != null)
                         if (isCanceled) { // guest canceled
                             gameRequestDialog.dismiss();
-                            Toast.makeText(getApplicationContext(), "" + guestUsername + "" + " canceled the game request", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Sorry, " + guestUsername + " cancelled their invitation.", Toast.LENGTH_SHORT).show();
 
                             // remove gameStatus document in guestUpdates
                             guestUpdatesRef.delete();
@@ -358,11 +346,11 @@ public class WaitingRoomActivity extends AppCompatActivity {
             //deprecated in API 26
             v.vibrate(500);
         }
-        if (!isHost(playerName, roomName)) // delete the guest's room when starting a game
+        /*if (!isHost(playerName, roomName)) // delete the guest's room when starting a game
         {
             DocumentReference guestRoomRef = fStore.collection(ROOMSPATH).document(playerName);
             guestRoomRef.delete();
-        }
+        }*/
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
         intent.putExtra("roomName", roomName);
         intent.putExtra("playerName", playerName);
@@ -446,13 +434,17 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
     // create a room with your name (as host)
     public void connectUser() {
-        roomName = playerName;
-        roomRef = fStore.collection(ROOMSPATH).document(roomName);
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("host", playerName);
-        userData.put("isInGame", false);
-        addDataToDatabase(userData, roomRef);
-        listenForRoomUpdates();
+        if (playerName != null) {
+            Log.d(TAG, "from connectUser: playerName = " + playerName);
+            roomName = playerName;
+            roomRef = fStore.collection(ROOMSPATH).document(roomName);
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("host", playerName);
+            userData.put("isInGame", false);
+            addDataToDatabase(userData, roomRef);
+            listenForRoomUpdates();
+        }
+
     }
 
 
@@ -475,6 +467,10 @@ public class WaitingRoomActivity extends AppCompatActivity {
             hostUpdatesListener.remove();
         if (roomsUpdaterView != null)
             roomsUpdaterView.remove();
+        if (guestUpdatesRef != null)
+            guestUpdatesRef.delete();
+        if (hostUpdatesRef != null)
+            hostUpdatesRef.delete();
         super.onStop();
     }
 
@@ -487,13 +483,13 @@ public class WaitingRoomActivity extends AppCompatActivity {
 //        super.onPause();
 //    }
 
-    //@Override
-//    protected void onResume() {
-//        // rejoin player to database because he came back online.
-//        Log.d(TAG, "ONRESUME: USER IS ONLINE AGAIN");
-//        connectUser();
-//
-//
-//        super.onResume();
-//    }
+    @Override
+    protected void onResume() {
+        // rejoin player to database because he came back online.
+        Log.d(TAG, "ONRESUME: USER IS ONLINE AGAIN");
+        connectUser();
+
+
+        super.onResume();
+    }
 }

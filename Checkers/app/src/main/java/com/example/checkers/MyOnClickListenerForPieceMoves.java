@@ -1,5 +1,10 @@
 package com.example.checkers;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -11,12 +16,14 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import static com.example.checkers.DatabaseUtils.addDataToDatabase;
 import static com.example.checkers.DatabaseUtils.isHost;
+import static com.example.checkers.DatabaseUtils.getGuestUsername;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,15 +32,15 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
 
     public static final String TAG = "MyListenerForPieceMoves";
     private static ImageView[] lastUsedImageViews; // for removing the setOnClickListeners that we set and the player did not choose, so there will not be hanging listeners.
-    //public /*static*/ boolean isBlackTurn;
     private final Piece piece;
     private final Board board;
     private final String roomName;
     private final String playerName;
+    private Context appContext; // for showing dialogs
     public final CollectionReference gameplayRef;
     public DocumentReference roomRef;
-//    public ListenerRegistration guestMovesUpdatesListener;
-//    public ListenerRegistration hostMovesUpdatesListener;
+    public ListenerRegistration guestMovesUpdatesListener;
+    public ListenerRegistration hostMovesUpdatesListener;
 
 
     public MyOnClickListenerForPieceMoves(Piece piece, Board board, String roomName, String playerName) {
@@ -44,6 +51,9 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
         this.playerName = playerName;
         this.roomRef = FirebaseFirestore.getInstance().collection(WaitingRoomActivity.ROOMSPATH).document(roomName);
         this.gameplayRef = roomRef.collection("gameplay");
+        this.hostMovesUpdatesListener = null;
+        this.guestMovesUpdatesListener = null;
+        this.appContext = null;
         lastUsedImageViews = new ImageView[10];
     }
 
@@ -54,27 +64,9 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
 
     public void displayMoveOptionsAndMove(int x, int y, boolean isBlack, boolean isKing, ImageView pieceImage) {
 
+        this.appContext = pieceImage.getContext();
         clearPossibleLocationMarkers();
         unsetOnClickLastImageViews();
-
-//        gameplayRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-//            @Override
-//            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
-//                if (error != null) {
-//                    Log.w(TAG, "Listen failed.", error);
-//                    return;
-//                }
-//                if (snapshot != null && snapshot.exists()) {
-//                    Boolean isBlackTurnFromDb = (Boolean) snapshot.get("isBlackTurn");
-//                    if (isBlackTurnFromDb != null){
-//
-//                    }
-//
-//                }
-//
-//            }
-//        });
-
 
         if (isHost(playerName, roomName)) // for the host (for black)
         {
@@ -118,7 +110,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 // it is red's turn now.
                 // set a listener for red's moves (guest moves) and move the red pieces accordingly
                 DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
-                GameActivity.guestMovesUpdatesListener = guestMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                guestMovesUpdatesListener = guestMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                     @Override
                     public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
                         if (error != null) {
@@ -131,16 +123,17 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                             String startAxis = (String) snapshot.get("startAxis"); // parsing the axis in the format: "X-Y"
                             Boolean isJump = (Boolean) snapshot.get("isJump");
                             Boolean isKingDb = (Boolean) snapshot.get("isKing");
+                            Boolean isGameEnd = (Boolean) snapshot.get("isGameOver");
                             if (endAxis != null && startAxis != null && isKingDb != null) {
                                 int startX = Integer.parseInt(startAxis.split("-")[0]);
                                 int startY = Integer.parseInt(startAxis.split("-")[1]);
                                 int endX = Integer.parseInt(endAxis.split("-")[0]);
                                 int endY = Integer.parseInt(endAxis.split("-")[1]);
                                 Move move = new Move(startX, startY, endX, endY);
-                                move.perform(false, isKingDb); // ***** change isKing here, and also update in uploadNewPieceLocation to add if the piece is king
+                                move.perform(false, isKingDb);
 
                                 // updating boardArray
-                                board.getBoardArray()[endX][endY] = new Piece(endX, endY, false, isKingDb); // ***** change isKing here
+                                board.getBoardArray()[endX][endY] = new Piece(endX, endY, false, isKingDb);
                                 board.getBoardArray()[startX][startY] = null; // remove old piece
 
                                 if (isJump != null) {
@@ -156,7 +149,10 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                                         } else
                                             Log.d(TAG, "Couldn't get jumpedAxis");
                                     }
+                                }
 
+                                if (isGameEnd != null) { // the players only update when they won, so when isGameEnd is not null, it means it must be true (so someone won)
+                                    gameOver(false); // red won the game
                                 }
                             }
 
@@ -210,7 +206,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                 // it is black's turn now.
                 // set a listener for black's moves (host pieces) and move the black pieces accordingly
                 DocumentReference hostMovesUpdatesRef = gameplayRef.document("hostMovesUpdates");
-                GameActivity.hostMovesUpdatesListener = hostMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                hostMovesUpdatesListener = hostMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                     @Override
                     public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
                         if (error != null) {
@@ -222,6 +218,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                             String startAxis = (String) snapshot.get("startAxis"); // parsing the axis by the format: "X-Y"
                             Boolean isJump = (Boolean) snapshot.get("isJump");
                             Boolean isKingDb = (Boolean) snapshot.get("isKing");
+                            Boolean isGameEnd = (Boolean) snapshot.get("isGameOver");
                             if (endAxis != null && startAxis != null && isKingDb != null) {
                                 int startX = Integer.parseInt(startAxis.split("-")[0]);
                                 int startY = Integer.parseInt(startAxis.split("-")[1]);
@@ -249,6 +246,8 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                                     }
                                 }
 
+                                if (isGameEnd != null) // the players only update when they won, so when isGameEnd is not null, it means it must be true (so someone won)
+                                    gameOver(true);
                             }
                         }
                     }
@@ -257,7 +256,7 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
             }
         }
 
-//
+//        ****play locally****
 //        if (isBlack) {
 //            highlightPiece(true, isKing, pieceImage);
 //            if (!isKing) {
@@ -572,14 +571,85 @@ public class MyOnClickListenerForPieceMoves implements View.OnClickListener {
                         redPieces++;
                 }
             }
-        if (redPieces == 0)
-            gameOver(false);
-        else if (blackPieces == 0)
+        // black won
+        if (redPieces == 0){
+            // update in db that black won (the host)
+            DocumentReference hostMovesUpdatesRef = gameplayRef.document("hostMovesUpdates");
+            Map<String, Object> updateGameOver = new HashMap<>();
+            updateGameOver.put("isGameOver", true);
+            addDataToDatabase(updateGameOver, hostMovesUpdatesRef);
+
+            // show locally on black's phone that he won
             gameOver(true);
+        }
+
+        // red won
+        else if (blackPieces == 0)
+        {
+            DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
+            Map<String, Object> updateGameOver = new HashMap<>();
+            updateGameOver.put("isGameOver", true);
+            addDataToDatabase(updateGameOver, guestMovesUpdatesRef);
+
+            // show locally on red's phone that he won
+            gameOver(false);
+        }
+
     }
 
     private void gameOver(boolean isBlack) {
         Log.d(TAG, "GAMEOVERRRRRRRRR*********");
+
+        boolean host = isHost(roomName, playerName);
+
+        AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(this.appContext, AlertDialog.THEME_HOLO_LIGHT);
+        gameRequestDialogBuilder.setCancelable(false);
+        gameRequestDialogBuilder.setTitle("Game is Over!");
+        gameRequestDialogBuilder.setPositiveButton("Return Back To The Lobby", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                appContext.startActivity(new Intent(appContext, WaitingRoomActivity.class));
+                ((Activity) appContext).finish(); // finish GameActivity
+            }
+        });
+
+        if (isBlack)
+        {
+            // show popup that the host won (roomName = hostname)
+            String hostUsername = roomName;
+            gameRequestDialogBuilder.setMessage(hostUsername + " has won the game! he is probably better.");
+        }
+        else
+        {
+            // show popup that the guest won (getGuestUsername())
+            String guestUsername;
+            if (host) // on the host phone (he doesn't have the guest's username, so he has to get it from db
+                guestUsername = getGuestUsername(roomRef);
+            else // on the guest phone (the local username is stored in playerName)
+                guestUsername = playerName;
+
+            gameRequestDialogBuilder.setMessage(guestUsername + " has won the game! he is probably better.");
+        }
+
+        if (host)
+        {
+            // remove the guest from the room
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
+            updates.put("isInGame", false); // update isInGame to false
+            addDataToDatabase(updates, roomRef);
+        }
+
+        AlertDialog gameRequestDialog;
+        gameRequestDialog = gameRequestDialogBuilder.create();
+        gameRequestDialog.show();
+
+        // clean-up stuff
+        if (hostMovesUpdatesListener != null)
+            hostMovesUpdatesListener.remove();
+        if (guestMovesUpdatesListener != null)
+            guestMovesUpdatesListener.remove();
+
         // REMEMBER:
         // remove listeners, each hostMovesUpdates and guestMovesUpdates.
         // remove the guest from the room (like when the host declines or guest cancels in WaitingRoom)

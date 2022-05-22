@@ -16,7 +16,7 @@ import java.util.Map;
 public class DatabaseUtils {
     public static final String TAG = "DatabaseUtils";
 
-    // wrapper function for update and set functions in
+    // wrapper function for update and set functions in the Firebase API
     public static void addDataToDatabase(Map<String, Object> data, DocumentReference docRef) {
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -37,5 +37,19 @@ public class DatabaseUtils {
 
     public static boolean isHost(String playerName, String roomName) {
         return playerName.equals(roomName);
+    }
+
+    public static String getGuestUsername(DocumentReference roomRef) {
+        Task<DocumentSnapshot> getGuest = roomRef.get();
+        while (!getGuest.isComplete()) {
+            System.out.println("waiting for guestUsername");
+        }
+        if (getGuest.isSuccessful()) {
+            DocumentSnapshot guestUsernameDoc = getGuest.getResult();
+            return (String) guestUsernameDoc.get("guest");
+        } else
+            Log.d(TAG, "Error getting document: ", getGuest.getException());
+
+        return "*GUEST*"; // couldn't get the guest username
     }
 }
