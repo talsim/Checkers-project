@@ -2,15 +2,21 @@ package com.example.checkers;
 
 
 
+import static com.example.checkers.MyOnClickListenerForPieceMoves.gameplayRef;
+import static com.example.checkers.WaitingRoomActivity.playerName;
+import static com.example.checkers.WaitingRoomActivity.roomName;
+
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class DatabaseUtils {
@@ -51,5 +57,29 @@ public class DatabaseUtils {
             Log.d(TAG, "Error getting document: ", getGuest.getException());
 
         return "*GUEST*"; // couldn't get the guest username
+    }
+
+    public static void updateBlackTurnInDb(boolean blackTurn, CollectionReference gameplayRef) {
+        Map<String, Object> gameUpdates = new HashMap<>();
+        gameUpdates.put("isBlackTurn", blackTurn);
+        addDataToDatabase(gameUpdates, gameplayRef.document("gameUpdates"));
+    }
+
+    public static void uploadPieceLocationToDb(Move move, boolean isJump, int jumpX, int jumpY, boolean isKing) {
+        DocumentReference documentReference;
+        if (isHost(playerName, roomName))
+            documentReference = gameplayRef.document("hostMovesUpdates"); // for host updates
+        else
+            documentReference = gameplayRef.document("guestMovesUpdates"); // for guest updates
+        Map<String, Object> updates = new HashMap<>();
+        String startAxis = move.getStartX() + "-" + move.getStartY();
+        String endAxis = move.getEndX() + "-" + move.getEndY();
+        updates.put("startAxis", startAxis);
+        updates.put("endAxis", endAxis);
+        updates.put("isKing", isKing);
+        updates.put("isJump", isJump);
+        if (isJump)
+            updates.put("jumpedAxis", jumpX + "-" + jumpY);
+        addDataToDatabase(updates, documentReference);
     }
 }

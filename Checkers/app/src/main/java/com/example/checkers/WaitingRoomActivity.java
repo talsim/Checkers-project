@@ -65,8 +65,8 @@ public class WaitingRoomActivity extends AppCompatActivity {
     protected ListenerRegistration roomsUpdaterView;
     private FirebaseFirestore fStore;
     public ListView listView;
-    public String playerName;
-    public String roomName;
+    public static String playerName;
+    public static String roomName;
     public DocumentReference hostUpdatesRef;
     public DocumentReference guestUpdatesRef;
 

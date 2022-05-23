@@ -81,9 +81,8 @@ public class GameActivity extends AppCompatActivity {
             for (int y = 0; y < Board.SIZE; y++) {
                 Piece currPiece = board.getBoardArray()[x][y];
                 if (currPiece != null) {
-                    imageViewsTiles[x][y].setOnClickListener(new MyOnClickListenerForPieceMoves(currPiece, board, roomName, playerName));
+                    imageViewsTiles[x][y].setOnClickListener(new MyOnClickListenerForPieceMoves(currPiece, board));
                 }
-
             }
         }
     }
