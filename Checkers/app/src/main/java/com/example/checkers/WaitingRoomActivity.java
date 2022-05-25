@@ -3,6 +3,7 @@ package com.example.checkers;
 import static com.example.checkers.DatabaseUtils.addDataToDatabase;
 import static com.example.checkers.DatabaseUtils.isHost;
 import static com.example.checkers.DatabaseUtils.getGuestUsername;
+import static com.example.checkers.DatabaseUtils.updateListview;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,9 +14,12 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -58,11 +62,12 @@ public class WaitingRoomActivity extends AppCompatActivity {
     protected TextView mUsername;
     protected TextView mEmail;
 
+    BroadcastReceiver broadcastReceiver;
     public DocumentReference roomRef;
     protected ListenerRegistration roomListener;
     protected ListenerRegistration hostUpdatesListener;
     protected ListenerRegistration guestUpdatesListener;
-    protected ListenerRegistration roomsUpdaterView;
+    protected static ListenerRegistration roomsUpdaterViewListener;
     private FirebaseFirestore fStore;
     public ListView listView;
     public static String playerName;
@@ -78,6 +83,8 @@ public class WaitingRoomActivity extends AppCompatActivity {
         listView = findViewById(R.id.listViewPlayers);
         ArrayList<String> roomsList = new ArrayList<>();
         fStore = FirebaseFirestore.getInstance();
+        broadcastReceiver = new MyBroadcastReceiver(roomsList, listView, getApplicationContext());
+        registerBroadcastListener();
 
         initNavHeader();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -94,8 +101,23 @@ public class WaitingRoomActivity extends AppCompatActivity {
             }
         });
 
-        updateListview(roomsList);
+        updateListview(roomsList, listView, getApplicationContext());
     }
+
+    public void registerBroadcastListener()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            registerReceiver(broadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            registerReceiver(broadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    public void unregisterBroadcastListener()
+    {
+
+    }
+
 
     // Contact button handler function
     public void ContactHandler() {
@@ -127,27 +149,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
     }
 
-    private void updateListview(ArrayList<String> roomsList) {
-        CollectionReference roomsRef = fStore.collection(ROOMSPATH);
-        roomsUpdaterView = roomsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (error != null) {
-                    Log.w(TAG, "Listen failed.", error);
-                    return;
-                }
-                roomsList.clear();
-                for (QueryDocumentSnapshot doc : value) {
-                    if (!doc.getId().equals(playerName)) {
-                        roomsList.add(doc.getId());
-                    }
 
-                }
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, roomsList);
-                listView.setAdapter(adapter);
-            }
-        });
-    }
 
     // when a room gets updated, check what got updated/added and react accordingly
     public void listenForRoomUpdates() {
@@ -453,7 +455,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        //startActivity(new Intent(getApplicationContext(), StartGameActivity.class));
+        startActivity(new Intent(getApplicationContext(),GameActivity.class));
         //super.onBackPressed(); // this disables back button by not calling the super function
     }
 
@@ -465,8 +467,8 @@ public class WaitingRoomActivity extends AppCompatActivity {
             guestUpdatesListener.remove();
         if (hostUpdatesListener != null)
             hostUpdatesListener.remove();
-        if (roomsUpdaterView != null)
-            roomsUpdaterView.remove();
+        if (roomsUpdaterViewListener != null)
+            roomsUpdaterViewListener.remove();
         if (guestUpdatesRef != null)
             guestUpdatesRef.delete();
         if (hostUpdatesRef != null)
@@ -491,5 +493,13 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
 
         super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        unregisterBroadcastListener();
+
+        super.onDestroy();
+
     }
 }

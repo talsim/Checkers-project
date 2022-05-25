@@ -3,19 +3,32 @@ package com.example.checkers;
 
 
 import static com.example.checkers.MyOnClickListenerForPieceMoves.gameplayRef;
+import static com.example.checkers.WaitingRoomActivity.ROOMSPATH;
 import static com.example.checkers.WaitingRoomActivity.playerName;
 import static com.example.checkers.WaitingRoomActivity.roomName;
+import static com.example.checkers.WaitingRoomActivity.roomsUpdaterViewListener;
 
+import android.content.Context;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,5 +94,27 @@ public class DatabaseUtils {
         if (isJump)
             updates.put("jumpedAxis", jumpX + "-" + jumpY);
         addDataToDatabase(updates, documentReference);
+    }
+
+    public static void updateListview(ArrayList<String> roomsList, ListView listView, Context appContext) {
+        CollectionReference roomsRef = FirebaseFirestore.getInstance().collection(ROOMSPATH);
+        roomsUpdaterViewListener = roomsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w(TAG, "Listen failed.", error);
+                    return;
+                }
+                roomsList.clear();
+                for (QueryDocumentSnapshot doc : value) {
+                    if (!doc.getId().equals(playerName)) {
+                        roomsList.add(doc.getId());
+                    }
+
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, roomsList);
+                listView.setAdapter(adapter);
+            }
+        });
     }
 }
