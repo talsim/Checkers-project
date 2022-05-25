@@ -14,4 +14,5 @@
     <string name="logout">Logout</string>
     <string name="contact_developer">Contact Developer</string>
     <string name="checkers_multiplayer">Checkers Multiplayer</string>
+    <string name="vibrate_when_a_game_starts">Vibrate when a game starts</string>
 </resources>

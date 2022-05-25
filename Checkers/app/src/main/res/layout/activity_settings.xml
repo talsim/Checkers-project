@@ -13,10 +13,12 @@
         android:layout_height="wrap_content"
         android:text="@string/settings_text"
         android:textSize="50sp"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="Here will be the settings, such as board color"
-        android:textSize="30sp"/>
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginStart="7dp"
+        android:text="@string/vibrate_when_a_game_starts"
+        android:textSize="17sp"
+        android:id="@+id/vibrateID"/>
 </LinearLayout>

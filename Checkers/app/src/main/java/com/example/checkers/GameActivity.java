@@ -2,14 +2,11 @@ package com.example.checkers;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
 
 import static com.example.checkers.DatabaseUtils.addDataToDatabase;
 
@@ -52,13 +49,9 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         String roomName = null;
-        String playerName = null;
         Bundle extras = getIntent().getExtras();
         if (extras != null)
-        {
             roomName = extras.getString("roomName");
-            playerName = extras.getString("playerName");
-        }
 
         initImageViews();
 
@@ -72,12 +65,12 @@ public class GameActivity extends AppCompatActivity {
         data.put("isBlackTurn", true); //  - we can also randomize this init value to get the result of a random player to start the game (a possible feature)
         addDataToDatabase(data, gameUpdatesRef);
 
-        setOnClickForPieces(roomName, playerName);
+        setOnClickForPieces();
 
 
     }
 
-    public void setOnClickForPieces(String roomName, String playerName) {
+    public void setOnClickForPieces() {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
                 Piece currPiece = board.getBoardArray()[x][y];
@@ -148,6 +141,6 @@ public class GameActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // back button is not allowed here.
-        super.onBackPressed();
+        // super.onBackPressed();
     }
 }

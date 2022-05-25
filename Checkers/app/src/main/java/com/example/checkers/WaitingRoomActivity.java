@@ -4,6 +4,7 @@ import static com.example.checkers.DatabaseUtils.addDataToDatabase;
 import static com.example.checkers.DatabaseUtils.isHost;
 import static com.example.checkers.DatabaseUtils.getGuestUsername;
 import static com.example.checkers.DatabaseUtils.updateListview;
+import static com.example.checkers.SettingsActivity.SETTINGS_PREFS;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +20,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
@@ -104,8 +106,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         updateListview(roomsList, listView, getApplicationContext());
     }
 
-    public void registerBroadcastListener()
-    {
+    public void registerBroadcastListener() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             registerReceiver(broadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
@@ -113,9 +114,9 @@ public class WaitingRoomActivity extends AppCompatActivity {
             registerReceiver(broadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
-    public void unregisterBroadcastListener()
-    {
-
+    public void unregisterBroadcastListener() {
+        if (broadcastReceiver != null)
+            unregisterReceiver(broadcastReceiver);
     }
 
 
@@ -148,7 +149,6 @@ public class WaitingRoomActivity extends AppCompatActivity {
         return false;
 
     }
-
 
 
     // when a room gets updated, check what got updated/added and react accordingly
@@ -307,7 +307,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
     }
 
-    private void setListenerForHostUpdates(String hostUsername, AlertDialog gameRequestDialog, DocumentReference hostUpdatesRef, Vibrator v) {
+    private void setListenerForHostUpdates(String hostUsername, AlertDialog gameRequestDialog, DocumentReference hostUpdatesRef, Vibrator vibrator) {
         hostUpdatesListener = hostUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
@@ -320,7 +320,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     if (startGame != null)
                         if (startGame) { // host confirmed = LET'S FUCKING PLAYYYY!!!!
                             gameRequestDialog.dismiss();
-                            startGame(v);
+                            startGame(vibrator);
                         } else { // host declined
                             gameRequestDialog.dismiss();
                             Toast.makeText(getApplicationContext(), "" + hostUsername + "" + " declined the game request", Toast.LENGTH_SHORT).show();
@@ -341,21 +341,27 @@ public class WaitingRoomActivity extends AppCompatActivity {
     }
 
     private void startGame(Vibrator v) {
-        // Vibrate for 500 milliseconds
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            //deprecated in API 26
-            v.vibrate(500);
+        SharedPreferences settingsPrefs = getSharedPreferences(SETTINGS_PREFS, MODE_PRIVATE);
+        boolean isVibrate = settingsPrefs.getBoolean("vibrate", true);
+
+        if (isVibrate) {
+            // Vibrate for 500 milliseconds
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                //deprecated in API 26
+                v.vibrate(500);
+            }
         }
+
         /*if (!isHost(playerName, roomName)) // delete the guest's room when starting a game
         {
             DocumentReference guestRoomRef = fStore.collection(ROOMSPATH).document(playerName);
             guestRoomRef.delete();
         }*/
+
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
         intent.putExtra("roomName", roomName);
-        intent.putExtra("playerName", playerName);
         startActivity(intent);
     }
 
@@ -455,7 +461,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        startActivity(new Intent(getApplicationContext(),GameActivity.class));
+        startActivity(new Intent(getApplicationContext(), GameActivity.class));
         //super.onBackPressed(); // this disables back button by not calling the super function
     }
 
