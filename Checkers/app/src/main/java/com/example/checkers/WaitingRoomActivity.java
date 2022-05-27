@@ -31,7 +31,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,7 +39,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -48,8 +46,6 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,10 +59,11 @@ public class WaitingRoomActivity extends AppCompatActivity {
     protected DrawerLayout drawer;
     protected TextView mUsername;
     protected TextView mEmail;
+    protected TextView currentTurn;
 
     BroadcastReceiver broadcastReceiver;
-    public DocumentReference roomRef;
-    protected ListenerRegistration roomListener;
+    public static DocumentReference roomRef;
+    protected static ListenerRegistration roomListener;
     protected ListenerRegistration hostUpdatesListener;
     protected ListenerRegistration guestUpdatesListener;
     protected static ListenerRegistration roomsUpdaterViewListener;
@@ -93,13 +90,19 @@ public class WaitingRoomActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // join an existing room and add yourself as guest
-                roomName = roomsList.get(position);
-                roomRef = fStore.collection(ROOMSPATH).document(roomName);
-                Map<String, Object> userData = new HashMap<>();
-                userData.put("guest", playerName);
-                userData.put("isInGame", true);
-                addDataToDatabase(userData, roomRef);
-                listenForRoomUpdates();
+                String otherPlayerName = roomsList.get(position);
+                if (!otherPlayerName.equals(playerName)) // if the player is not challenging himself
+                {
+                    roomName = otherPlayerName;
+                    roomRef = fStore.collection(ROOMSPATH).document(roomName);
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("guest", playerName);
+                    userData.put("isInGame", true);
+                    addDataToDatabase(userData, roomRef);
+                    listenForRoomUpdates();
+                }
+                else // if the player IS challenging himself, just tell him he can't.
+                    Toast.makeText(getApplicationContext(), "Challenge... yourself? :)", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -323,7 +326,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                             startGame(vibrator);
                         } else { // host declined
                             gameRequestDialog.dismiss();
-                            Toast.makeText(getApplicationContext(), "" + hostUsername + "" + " declined the game request", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Sorry, " + hostUsername + " declined your invitation", Toast.LENGTH_SHORT).show();
 
                             // remove gameStatus document in hostUpdates
                             hostUpdatesRef.delete();
@@ -354,14 +357,15 @@ public class WaitingRoomActivity extends AppCompatActivity {
             }
         }
 
-        /*if (!isHost(playerName, roomName)) // delete the guest's room when starting a game
+        if (!isHost(playerName, roomName)) // delete the guest's room when starting a game
         {
             DocumentReference guestRoomRef = fStore.collection(ROOMSPATH).document(playerName);
             guestRoomRef.delete();
-        }*/
+        }
 
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
         intent.putExtra("roomName", roomName);
+        intent.putExtra("playerName", playerName);
         startActivity(intent);
     }
 
@@ -461,7 +465,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        startActivity(new Intent(getApplicationContext(), GameActivity.class));
+        //startActivity(new Intent(getApplicationContext(), GameActivity.class));
         //super.onBackPressed(); // this disables back button by not calling the super function
     }
 
@@ -504,7 +508,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         unregisterBroadcastListener();
-
+        disconnectUser();
         super.onDestroy();
 
     }

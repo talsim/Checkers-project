@@ -13,7 +13,7 @@ import static com.example.checkers.WaitingRoomActivity.roomsUpdaterViewListener;
 
 import java.util.ArrayList;
 
-public class MyBroadcastReceiver extends BroadcastReceiver {
+public class MyBroadcastReceiver extends android.content.BroadcastReceiver {
 
     protected ArrayList<String> roomsList;
     protected ListView listView;

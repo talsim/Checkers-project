@@ -1,14 +1,22 @@
 package com.example.checkers;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import static com.example.checkers.DatabaseUtils.addDataToDatabase;
+import static com.example.checkers.DatabaseUtils.isHost;
+import static com.example.checkers.WaitingRoomActivity.roomRef;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +49,8 @@ public class GameActivity extends AppCompatActivity {
 
     public static final ImageView[][] imageViewsTiles = new ImageView[Board.SIZE][Board.SIZE]; // all the squares which contain the actual pieces (reference from the xml)
     public static final String TAG = "GameActivity";
+    public static ListenerRegistration guestMovesUpdatesListener;
+    public static ListenerRegistration hostMovesUpdatesListener;
     protected Board board;
 
 
@@ -49,14 +59,18 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         String roomName = null;
+        String playerName = null;
         Bundle extras = getIntent().getExtras();
-        if (extras != null)
+        if (extras != null) {
             roomName = extras.getString("roomName");
+            playerName = extras.getString("playerName");
+        }
+
 
         initImageViews();
 
         board = new Board();
-        initBoardAndDrawPieces(); // init board as well as drawing the black and red pieces on it
+        initBoardAndDrawPieces(playerName, roomName); // init board as well as drawing the black and red pieces on it
 
         // set initial value for isBlackTurn (host starts as black)
         FirebaseFirestore fStore = FirebaseFirestore.getInstance();
@@ -75,20 +89,28 @@ public class GameActivity extends AppCompatActivity {
             for (int y = 0; y < Board.SIZE; y++) {
                 Piece currPiece = board.getBoardArray()[x][y];
                 if (currPiece != null) {
-                    imageViewsTiles[x][y].setOnClickListener(new MyOnClickListenerForPieceMoves(currPiece, board));
+                    imageViewsTiles[x][y].setOnClickListener(new OnClickListenerForPieceMoves(currPiece, board));
                 }
             }
         }
     }
 
     // Responsible for drawing the pieces on the board
-    public void initBoardAndDrawPieces() {
+    public void initBoardAndDrawPieces(String playerName, String roomName) {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
                 // red pieces
                 if (x <= 2 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.red_piece);
                     board.getBoardArray()[x][y] = new Piece(x, y, false);
+
+                    if (!isHost(playerName, roomName)) {
+                        // set a listener for black's moves (host pieces) and move the black pieces accordingly
+                        DocumentReference hostMovesUpdatesRef = roomRef.collection("gameplay").document("hostMovesUpdates");
+                        hostMovesUpdatesListener = listenDBForPieceMoves(hostMovesUpdatesRef, true, board.getBoardArray()[x][y]);
+
+                    }
+
                 }
 
 
@@ -96,10 +118,68 @@ public class GameActivity extends AppCompatActivity {
                 if (x >= 5 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.black_piece);
                     board.getBoardArray()[x][y] = new Piece(x, y, true);
+
+                    if (isHost(playerName, roomName)) {
+                        // set a listener for red's moves (guest moves) and move the red pieces accordingly
+                        DocumentReference guestMovesUpdatesRef = roomRef.collection("gameplay").document("guestMovesUpdates");
+                        guestMovesUpdatesListener = listenDBForPieceMoves(guestMovesUpdatesRef, false, board.getBoardArray()[x][y]);
+                    }
                 }
 
             }
         }
+    }
+
+    private ListenerRegistration listenDBForPieceMoves(DocumentReference playerMovesUpdatesRef, boolean isPieceBlack, Piece piece) {
+
+        return playerMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w(TAG, "Listen failed.", error);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    String endAxis = (String) snapshot.get("endAxis"); // parsing the axis in the format: "X-Y"
+                    String startAxis = (String) snapshot.get("startAxis"); // parsing the axis in the format: "X-Y"
+                    Boolean isJump = (Boolean) snapshot.get("isJump");
+                    Boolean isKingDb = (Boolean) snapshot.get("isKing");
+                    Boolean isGameEnd = (Boolean) snapshot.get("isGameOver");
+                    if (endAxis != null && startAxis != null && isKingDb != null) {
+                        int startX = Integer.parseInt(startAxis.split("-")[0]);
+                        int startY = Integer.parseInt(startAxis.split("-")[1]);
+                        int endX = Integer.parseInt(endAxis.split("-")[0]);
+                        int endY = Integer.parseInt(endAxis.split("-")[1]);
+                        Move move = new Move(startX, startY, endX, endY);
+                        move.perform(isPieceBlack, isKingDb);
+
+
+                        // updating boardArray
+                        board.getBoardArray()[endX][endY] = new Piece(endX, endY, isPieceBlack, isKingDb);
+                        board.getBoardArray()[startX][startY] = null; // remove old piece
+
+                        if (isJump != null) {
+                            if (isJump) { // if true: there was a jump, remove the jumped piece
+                                String jumpedAxis = (String) snapshot.get("jumpedAxis"); // // parsing the axis in the format: "X-Y"
+                                if (jumpedAxis != null) {
+                                    int jumpedX = Integer.parseInt(jumpedAxis.split("-")[0]);
+                                    int jumpedY = Integer.parseInt(jumpedAxis.split("-")[1]);
+
+                                    GameActivity.imageViewsTiles[jumpedX][jumpedY].setImageResource(android.R.color.transparent);
+                                    GameActivity.imageViewsTiles[jumpedX][jumpedY].setClickable(false);
+                                    board.getBoardArray()[jumpedX][jumpedY] = null;
+                                } else
+                                    Log.d(TAG, "Couldn't get jumpedAxis");
+                            }
+                        }
+
+                        if (isGameEnd != null) { // the players only update when they won, so when isGameEnd is not null, it means it must be true (so someone won)
+                            piece.gameOver(false); // red won the game
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void initImageViews() {

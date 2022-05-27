@@ -2,7 +2,8 @@ package com.example.checkers;
 
 
 
-import static com.example.checkers.MyOnClickListenerForPieceMoves.gameplayRef;
+import static com.example.checkers.OnClickListenerForPieceMoves.TAG;
+import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
 import static com.example.checkers.WaitingRoomActivity.ROOMSPATH;
 import static com.example.checkers.WaitingRoomActivity.playerName;
 import static com.example.checkers.WaitingRoomActivity.roomName;
@@ -17,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -30,6 +32,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DatabaseUtils {
@@ -117,4 +120,25 @@ public class DatabaseUtils {
             }
         });
     }
+    public static void deleteAllDocumentsInCollection(CollectionReference collectionReference)
+    {
+        collectionReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                List<DocumentSnapshot> myListOfDocuments = task.getResult().getDocuments();
+                for (DocumentSnapshot doc : myListOfDocuments)
+                {
+                    doc.getReference().delete().addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "ERROR!!! Failed to delete gameplay documents!", e);
+                        }
+                    });
+                }
+
+            }
+        });
+    }
+
+
 }

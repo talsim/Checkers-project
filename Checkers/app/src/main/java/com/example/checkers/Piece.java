@@ -10,21 +10,31 @@ import android.view.View;
 import android.widget.ImageView;
 
 import static com.example.checkers.DatabaseUtils.addDataToDatabase;
+import static com.example.checkers.DatabaseUtils.deleteAllDocumentsInCollection;
 import static com.example.checkers.DatabaseUtils.getGuestUsername;
 import static com.example.checkers.DatabaseUtils.isHost;
 import static com.example.checkers.DatabaseUtils.updateBlackTurnInDb;
 import static com.example.checkers.DatabaseUtils.uploadPieceLocationToDb;
-import static com.example.checkers.MyOnClickListenerForPieceMoves.appContext;
-import static com.example.checkers.MyOnClickListenerForPieceMoves.gameplayRef;
-import static com.example.checkers.MyOnClickListenerForPieceMoves.guestMovesUpdatesListener;
-import static com.example.checkers.MyOnClickListenerForPieceMoves.hostMovesUpdatesListener;
-import static com.example.checkers.MyOnClickListenerForPieceMoves.lastUsedImageViews;
-import static com.example.checkers.MyOnClickListenerForPieceMoves.roomRef;
+import static com.example.checkers.OnClickListenerForPieceMoves.TAG;
+import static com.example.checkers.OnClickListenerForPieceMoves.appContext;
+import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
+import static com.example.checkers.GameActivity.guestMovesUpdatesListener;
+import static com.example.checkers.GameActivity.hostMovesUpdatesListener;
+import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageViews;
+import static com.example.checkers.WaitingRoomActivity.ROOMSPATH;
+import static com.example.checkers.WaitingRoomActivity.roomListener;
+import static com.example.checkers.WaitingRoomActivity.roomRef;
 import static com.example.checkers.WaitingRoomActivity.playerName;
 import static com.example.checkers.WaitingRoomActivity.roomName;
 
+import androidx.annotation.Nullable;
+
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,7 +97,7 @@ public class Piece {
                 rightPieceImage.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        MyOnClickListenerForPieceMoves onClickListenerForPieceMoves = new MyOnClickListenerForPieceMoves(board.getBoardArray()[endX][endY], board);
+                        OnClickListenerForPieceMoves onClickListenerForPieceMoves = new OnClickListenerForPieceMoves(board.getBoardArray()[endX][endY], board);
                         onClickListenerForPieceMoves.displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), rightPieceImage); // recursively show more move options
                     }
                 });
@@ -139,7 +149,7 @@ public class Piece {
                 leftPieceImage.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        MyOnClickListenerForPieceMoves onClickListenerForPieceMoves = new MyOnClickListenerForPieceMoves(board.getBoardArray()[endX][endY], board);
+                        OnClickListenerForPieceMoves onClickListenerForPieceMoves = new OnClickListenerForPieceMoves(board.getBoardArray()[endX][endY], board);
                         onClickListenerForPieceMoves.displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), leftPieceImage); // recursively show more move options
                     }
                 });
@@ -223,7 +233,7 @@ public class Piece {
                 }
             }
         // black won
-        if (redPieces == 0){
+        if (redPieces == 0) {
             // update in db that black won (the host)
             DocumentReference hostMovesUpdatesRef = gameplayRef.document("hostMovesUpdates");
             Map<String, Object> updateGameOver = new HashMap<>();
@@ -235,8 +245,7 @@ public class Piece {
         }
 
         // red won
-        else if (blackPieces == 0)
-        {
+        else if (blackPieces == 0) {
             DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
             Map<String, Object> updateGameOver = new HashMap<>();
             updateGameOver.put("isGameOver", true);
@@ -264,14 +273,11 @@ public class Piece {
             }
         });
 
-        if (isBlack)
-        {
+        if (isBlack) {
             // show popup that the host won (roomName = hostname)
             String hostUsername = roomName;
             gameRequestDialogBuilder.setMessage(hostUsername + " has won the game! he is probably better.");
-        }
-        else
-        {
+        } else {
             // show popup that the guest won (getGuestUsername())
             String guestUsername;
             if (host) // on the host phone (he doesn't have the guest's username, so he has to get it from db
@@ -281,19 +287,53 @@ public class Piece {
 
             gameRequestDialogBuilder.setMessage(guestUsername + " has won the game! he is probably better.");
         }
-
-        if (host)
-        {
-            // remove the guest from the room
-            Map<String, Object> updates = new HashMap<>();
-            updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
-            updates.put("isInGame", false); // update isInGame to false
-            addDataToDatabase(updates, roomRef);
-        }
-
         AlertDialog gameRequestDialog;
         gameRequestDialog = gameRequestDialogBuilder.create();
         gameRequestDialog.show();
+
+        if (host) {
+            // wait for the guest to receive "GameOver" message, only then clean up
+            gameplayRef.document("gameUpdates").addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                    if (error != null) {
+                        Log.w(TAG, "Listen failed.", error);
+                        return;
+                    }
+                    if (snapshot != null && snapshot.exists()) {
+                        Boolean guestGotGameOverMsg = (Boolean) snapshot.get("GotGameOver");
+                        if (guestGotGameOverMsg != null) { // guest got the message, the value doesn't matter
+                            // ---CLEAN-UP AFTER GAME ENDS---
+
+                            // remove the guest from the room
+                            Map<String, Object> updates = new HashMap<>();
+                            updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
+                            updates.put("isInGame", false); // update isInGame to false
+                            addDataToDatabase(updates, roomRef);
+
+                            deleteAllDocumentsInCollection(gameplayRef); // remove all gameplay documents that the host and guest created (cleaning-up)
+                        }
+                    }
+                }
+            });
+
+
+        } else // for guest
+        {
+            // update host that we got the message (that the guest got the message)
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("GotGameOver", true);
+            addDataToDatabase(updates, gameplayRef.document("gameUpdates"));
+
+            // change roomName back to guest's name
+            roomName = playerName;
+            roomRef = FirebaseFirestore.getInstance().collection(ROOMSPATH).document(roomName);
+
+            // remove room listener for guest
+            roomListener.remove();
+
+
+        }
 
         // clean-up stuff
         if (hostMovesUpdatesListener != null)

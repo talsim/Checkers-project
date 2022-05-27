@@ -1,6 +1,6 @@
 package com.example.checkers;
 
-import static com.example.checkers.MyOnClickListenerForPieceMoves.lastUsedImageViews;
+import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageViews;
 
 import android.widget.ImageView;
 
