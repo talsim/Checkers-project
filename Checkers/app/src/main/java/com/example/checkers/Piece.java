@@ -235,10 +235,10 @@ public class Piece {
         // black won
         if (redPieces == 0) {
             // update in db that black won (the host)
-            DocumentReference hostMovesUpdatesRef = gameplayRef.document("hostMovesUpdates");
-            Map<String, Object> updateGameOver = new HashMap<>();
-            updateGameOver.put("isGameOver", true);
-            addDataToDatabase(updateGameOver, hostMovesUpdatesRef);
+//            DocumentReference hostMovesUpdatesRef = gameplayRef.document("hostMovesUpdates");
+//            Map<String, Object> updateGameOver = new HashMap<>();
+//            updateGameOver.put("isGameOver", true);
+//            addDataToDatabase(updateGameOver, hostMovesUpdatesRef);
 
             // show locally on black's phone that he won
             gameOver(true);
@@ -246,10 +246,10 @@ public class Piece {
 
         // red won
         else if (blackPieces == 0) {
-            DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
-            Map<String, Object> updateGameOver = new HashMap<>();
-            updateGameOver.put("isGameOver", true);
-            addDataToDatabase(updateGameOver, guestMovesUpdatesRef);
+//            DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
+//            Map<String, Object> updateGameOver = new HashMap<>();
+//            updateGameOver.put("isGameOver", true);
+//            addDataToDatabase(updateGameOver, guestMovesUpdatesRef);
 
             // show locally on red's phone that he won
             gameOver(false);
@@ -293,37 +293,40 @@ public class Piece {
 
         if (host) {
             // wait for the guest to receive "GameOver" message, only then clean up
-            gameplayRef.document("gameUpdates").addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
-                    if (error != null) {
-                        Log.w(TAG, "Listen failed.", error);
-                        return;
-                    }
-                    if (snapshot != null && snapshot.exists()) {
-                        Boolean guestGotGameOverMsg = (Boolean) snapshot.get("GotGameOver");
-                        if (guestGotGameOverMsg != null) { // guest got the message, the value doesn't matter
-                            // ---CLEAN-UP AFTER GAME ENDS---
+//            gameplayRef.document("gameUpdates").addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//                @Override
+//                public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+//                    if (error != null) {
+//                        Log.w(TAG, "Listen failed.", error);
+//                        return;
+//                    }
+//                    if (snapshot != null && snapshot.exists()) {
+//                        Boolean guestGotGameOverMsg = (Boolean) snapshot.get("GotGameOver");
+//                        if (guestGotGameOverMsg != null) { // guest got the message, the value doesn't matter
+//                            // ---CLEAN-UP AFTER GAME ENDS---
+//
+//
+//                        }
+//                    }
+//                }
+//            });
 
-                            // remove the guest from the room
-                            Map<String, Object> updates = new HashMap<>();
-                            updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
-                            updates.put("isInGame", false); // update isInGame to false
-                            addDataToDatabase(updates, roomRef);
-
-                            deleteAllDocumentsInCollection(gameplayRef); // remove all gameplay documents that the host and guest created (cleaning-up)
-                        }
-                    }
-                }
-            });
-
+            Log.d(TAG, "HOST ITS GAME OVER! U DO NOTHING ;)");
 
         } else // for guest
         {
-            // update host that we got the message (that the guest got the message)
+//            // update host that we got the message (that the guest got the message)
+//            Map<String, Object> updates = new HashMap<>();
+//            updates.put("GotGameOver", true);
+//            addDataToDatabase(updates, gameplayRef.document("gameUpdates"));
+
+            // remove the guest from the room
             Map<String, Object> updates = new HashMap<>();
-            updates.put("GotGameOver", true);
-            addDataToDatabase(updates, gameplayRef.document("gameUpdates"));
+            updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
+            updates.put("isInGame", false); // update isInGame to false
+            addDataToDatabase(updates, roomRef);
+
+            deleteAllDocumentsInCollection(gameplayRef); // remove all gameplay documents that the host and guest created (cleaning-up)
 
             // change roomName back to guest's name
             roomName = playerName;

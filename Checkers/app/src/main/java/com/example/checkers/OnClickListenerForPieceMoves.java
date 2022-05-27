@@ -36,7 +36,6 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
         this.board = board;
         this.roomName = WaitingRoomActivity.roomName;
         this.playerName = WaitingRoomActivity.playerName;
-        //roomRef = FirebaseFirestore.getInstance().collection(WaitingRoomActivity.ROOMSPATH).document(roomName);
         gameplayRef = roomRef.collection("gameplay");
         appContext = null;
         lastUsedImageViews = new ImageView[10];

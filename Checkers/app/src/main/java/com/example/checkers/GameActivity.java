@@ -172,10 +172,10 @@ public class GameActivity extends AppCompatActivity {
                                     Log.d(TAG, "Couldn't get jumpedAxis");
                             }
                         }
-
-                        if (isGameEnd != null) { // the players only update when they won, so when isGameEnd is not null, it means it must be true (so someone won)
-                            piece.gameOver(false); // red won the game
-                        }
+                        piece.isGameOver(board);
+//                        if (isGameEnd != null) { // the players only update when they won, so when isGameEnd is not null, it means it must be true (so someone won)
+//                            piece.gameOver(false); // red won the game
+                       // }
                     }
                 }
             }
