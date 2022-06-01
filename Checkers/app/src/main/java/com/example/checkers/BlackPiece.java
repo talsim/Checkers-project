@@ -4,14 +4,14 @@ import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageVie
 
 import android.widget.ImageView;
 
-public class BlackPiece extends Piece{
+// class that defines a black piece
+public class BlackPiece extends Piece {
 
     public BlackPiece(int x, int y, boolean isBlack, boolean isKing) {
         super(x, y, isBlack, isKing);
     }
 
-    public void move(Board board)
-    {
+    public void move(Board board) {
         /* -------------------------- left diagonal -------------------------- */
         if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
             ImageView leftPieceImage = GameActivity.imageViewsTiles[x - 1][y - 1];

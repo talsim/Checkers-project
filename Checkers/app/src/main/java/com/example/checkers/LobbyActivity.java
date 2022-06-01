@@ -1,9 +1,9 @@
 package com.example.checkers;
 
-import static com.example.checkers.DatabaseUtils.addDataToDatabase;
-import static com.example.checkers.DatabaseUtils.isHost;
-import static com.example.checkers.DatabaseUtils.getGuestUsername;
-import static com.example.checkers.DatabaseUtils.updateListview;
+import static com.example.checkers.DBUtils.addDataToDatabase;
+import static com.example.checkers.DBUtils.isHost;
+import static com.example.checkers.DBUtils.getGuestUsername;
+import static com.example.checkers.DBUtils.updateListview;
 import static com.example.checkers.SettingsActivity.SETTINGS_PREFS;
 
 import androidx.annotation.NonNull;
@@ -52,21 +52,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class WaitingRoomActivity extends AppCompatActivity {
+public class LobbyActivity extends AppCompatActivity {
     public static final String TAG = "WaitingRoom";
     public static final String ROOMSPATH = "rooms";
-    protected Toolbar toolbar;
-    protected DrawerLayout drawer;
-    protected TextView mUsername;
-    protected TextView mEmail;
-    protected TextView currentTurn;
+    public Toolbar toolbar;
+    public DrawerLayout drawer;
+    public TextView mUsername;
+    public TextView mEmail;
 
-    BroadcastReceiver broadcastReceiver;
+    public BroadcastReceiver broadcastReceiver;
     public static DocumentReference roomRef;
-    protected static ListenerRegistration roomListener;
-    protected ListenerRegistration hostUpdatesListener;
-    protected ListenerRegistration guestUpdatesListener;
-    protected static ListenerRegistration roomsUpdaterViewListener;
+    public static ListenerRegistration roomListener;
+    public ListenerRegistration hostUpdatesListener;
+    public ListenerRegistration guestUpdatesListener;
+    public static ListenerRegistration roomsUpdaterViewListener;
     private FirebaseFirestore fStore;
     public ListView listView;
     public static String playerName;
@@ -75,9 +74,9 @@ public class WaitingRoomActivity extends AppCompatActivity {
     public DocumentReference guestUpdatesRef;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_waiting_room);
+        setContentView(R.layout.activity_lobby);
 
         listView = findViewById(R.id.listViewPlayers);
         ArrayList<String> roomsList = new ArrayList<>();
@@ -100,8 +99,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                     userData.put("isInGame", true);
                     addDataToDatabase(userData, roomRef);
                     listenForRoomUpdates();
-                }
-                else // if the player IS challenging himself, just tell him he can't.
+                } else // if the player IS challenging himself, just tell him he can't.
                     Toast.makeText(getApplicationContext(), "Challenge... yourself? :)", Toast.LENGTH_LONG).show();
             }
         });
@@ -109,6 +107,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         updateListview(roomsList, listView, getApplicationContext());
     }
 
+    // register broadcast listener
     public void registerBroadcastListener() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             registerReceiver(broadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -117,6 +116,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
             registerReceiver(broadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
+    // unregister broadcast listener
     public void unregisterBroadcastListener() {
         if (broadcastReceiver != null)
             unregisterReceiver(broadcastReceiver);
@@ -124,7 +124,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
 
     // Contact button handler function
-    public void ContactHandler() {
+    public void contactHandler() {
         Uri uri = Uri.parse("smsto:" + 99999999);
         Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
         intent.putExtra("sms_body", "Your feedback here");
@@ -135,6 +135,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         }
     }
 
+    // get isInGame value from db
     private boolean getIsInGame() {
         Task<DocumentSnapshot> getInGame = fStore.collection(ROOMSPATH).document(roomName).get();
         while (!getInGame.isComplete()) {
@@ -159,20 +160,6 @@ public class WaitingRoomActivity extends AppCompatActivity {
         roomListener = roomRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                /*
-                            ** pseudo-code **
-
-                 if (only host in room)
-                      just ignore it
-                 else    // guest and host is in room now
-                      send_game_request_to_host()
-                      if (confirmed)
-                         start_game_for_host_and_guest()
-                      else // host declined
-                          send_to_guest_that_host_declined()
-
-                */
-
                 if (error != null) {
                     Log.w(TAG, "Listen failed.", error);
                     return;
@@ -192,7 +179,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         String hostUsername = roomName;
         Map<String, Object> gameRequestData = new HashMap<>();
         AlertDialog gameRequestDialog;
-        AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(WaitingRoomActivity.this, AlertDialog.THEME_HOLO_LIGHT);
+        AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(LobbyActivity.this, AlertDialog.THEME_HOLO_LIGHT);
         gameRequestDialogBuilder.setCancelable(false);
 
         Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -280,7 +267,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
     }
 
-
+    // host will call this function to listen for guest updates e.g if he cancelled his invitation.
     private void setListenerForGuestUpdates(String guestUsername, AlertDialog gameRequestDialog, DocumentReference guestUpdatesRef) {
         guestUpdatesListener = guestUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -310,6 +297,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
     }
 
+    // guest will call this function to listen for host updates when inviting him to a game
     private void setListenerForHostUpdates(String hostUsername, AlertDialog gameRequestDialog, DocumentReference hostUpdatesRef, Vibrator vibrator) {
         hostUpdatesListener = hostUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -343,6 +331,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         });
     }
 
+    // start the game (with or without vibration)
     private void startGame(Vibrator v) {
         SharedPreferences settingsPrefs = getSharedPreferences(SETTINGS_PREFS, MODE_PRIVATE);
         boolean isVibrate = settingsPrefs.getBoolean("vibrate", true);
@@ -370,6 +359,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
     }
 
 
+    // init menu and connect user
     public void initNavHeader() {
         toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
@@ -400,7 +390,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                         finish();
                         break;
                     case R.id.nav_feedback:
-                        ContactHandler();
+                        contactHandler();
                         break;
 
                     default:
@@ -437,6 +427,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
         mEmail.setText(Objects.requireNonNull(fAuth.getCurrentUser()).getEmail()); // again, can't be null...
     }
 
+    // remove room only if not in game
     public void disconnectUser() {
         if (isHost(playerName, roomName))
             if (!getIsInGame())
@@ -465,12 +456,10 @@ public class WaitingRoomActivity extends AppCompatActivity {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        //startActivity(new Intent(getApplicationContext(), GameActivity.class));
-        //super.onBackPressed(); // this disables back button by not calling the super function
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         if (roomListener != null)
             roomListener.remove();
         if (guestUpdatesListener != null)
@@ -486,17 +475,8 @@ public class WaitingRoomActivity extends AppCompatActivity {
         super.onStop();
     }
 
-    //    @Override
-//    protected void onPause() {
-//        // remove player from database because he is no longer online.
-//        Log.d(TAG, "ONSTOP: USER DISCONNECTED");
-//        disconnectUser();
-//
-//        super.onPause();
-//    }
-
     @Override
-    protected void onResume() {
+    public void onResume() {
         // rejoin player to database because he came back online.
         Log.d(TAG, "ONRESUME: USER IS ONLINE AGAIN");
         connectUser();
@@ -506,7 +486,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         unregisterBroadcastListener();
         disconnectUser();
         super.onDestroy();

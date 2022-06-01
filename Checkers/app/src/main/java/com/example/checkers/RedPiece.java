@@ -10,8 +10,8 @@ public class RedPiece extends Piece {
         super(x, y, isBlack, isKing);
     }
 
-    public void move(Board board)
-    {
+    // move according to red logic
+    public void move(Board board) {
         /* -------------------------- left diagonal -------------------------- */
         if (Logic.canRedMoveDown(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x + 1, y - 1) /* left tile */) {
             Move leftMove = new Move(x, y, x + 1, y - 1);

@@ -4,14 +4,13 @@ import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageVie
 
 import android.widget.ImageView;
 
-public class KingPiece extends Piece{
+public class KingPiece extends Piece {
 
     public KingPiece(int x, int y, boolean isBlack) {
         super(x, y, isBlack);
     }
 
-    public void move(Board board)
-    {
+    public void move(Board board) {
         /* -------------------------- left diagonal BLACK -------------------------- */
         if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
             ImageView leftPieceImage = GameActivity.imageViewsTiles[x - 1][y - 1];
@@ -114,5 +113,4 @@ public class KingPiece extends Piece{
             return !board.getBoardArray()[x][y].isBlack(); // check if there is red piece behind me
         return board.getBoardArray()[x][y].isBlack(); // else, check if there is black piece behind me
     }
-
 }

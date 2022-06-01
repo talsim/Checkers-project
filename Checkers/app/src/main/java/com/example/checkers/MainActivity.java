@@ -1,4 +1,5 @@
 package com.example.checkers;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -21,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
         if (FirebaseAuth.getInstance().getCurrentUser() != null) // if user already logged in
         {
             System.out.println("user already logged in, redirecting to WaitingRoom");
-            startActivity(new Intent(getApplicationContext(), WaitingRoomActivity.class));
+            startActivity(new Intent(getApplicationContext(), LobbyActivity.class));
         }
 
         login = findViewById(R.id.login);
@@ -30,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent( getApplicationContext(), LoginActivity.class);
+                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                 startActivity(intent);
             }
         });

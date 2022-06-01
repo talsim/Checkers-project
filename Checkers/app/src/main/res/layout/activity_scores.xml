@@ -3,22 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:background="@color/background"
     tools:context=".ScoresActivity">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="50sp"
-        android:text="@string/scores"/>
+        android:text="@string/scores"
+        android:textSize="50sp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
         android:layout_marginTop="50dp"
-        android:text="Here will be a list of scores"/>
+        android:textSize="30sp" />
 
 </LinearLayout>

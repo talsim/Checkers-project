@@ -5,19 +5,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-import androidx.annotation.Nullable;
-
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
 
-import static com.example.checkers.DatabaseUtils.isHost;
-import static com.example.checkers.WaitingRoomActivity.roomRef;
+import static com.example.checkers.DBUtils.isHost;
+import static com.example.checkers.LobbyActivity.roomRef;
 
 public class OnClickListenerForPieceMoves implements View.OnClickListener {
 
@@ -34,8 +27,8 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
     public OnClickListenerForPieceMoves(Piece piece, Board board) {
         this.piece = piece;
         this.board = board;
-        this.roomName = WaitingRoomActivity.roomName;
-        this.playerName = WaitingRoomActivity.playerName;
+        this.roomName = LobbyActivity.roomName;
+        this.playerName = LobbyActivity.playerName;
         gameplayRef = roomRef.collection("gameplay");
         appContext = null;
         lastUsedImageViews = new ImageView[10];
@@ -60,18 +53,10 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
                     // move black
                     this.piece = new BlackPiece(x, y, true, false);
                     ((BlackPiece) this.piece).move(board);
-                } else
-                {
+                } else {
                     this.piece = new KingPiece(x, y, true);
                     ((KingPiece) this.piece).move(board);
                 }
-
-            } else {
-
-
-                /*DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
-                guestMovesUpdatesListener = listenDBForPieceMoves(guestMovesUpdatesRef, false, board, piece);*/
-
             }
 
         } else // for the guest (for red)
@@ -81,17 +66,10 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
                 if (!isKing) {
                     this.piece = new RedPiece(x, y, false, false);
                     ((RedPiece) this.piece).move(board);
-                } else
-                {
+                } else {
                     this.piece = new KingPiece(x, y, false);
                     ((KingPiece) this.piece).move(board);
                 }
-
-            } else {
-
-
-                /*DocumentReference hostMovesUpdatesRef = gameplayRef.document("hostMovesUpdates");
-                hostMovesUpdatesListener = listenDBForPieceMoves(hostMovesUpdatesRef, true, board, piece);*/
             }
         }
 

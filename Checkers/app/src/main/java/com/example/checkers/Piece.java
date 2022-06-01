@@ -9,32 +9,26 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-import static com.example.checkers.DatabaseUtils.addDataToDatabase;
-import static com.example.checkers.DatabaseUtils.deleteAllDocumentsInCollection;
-import static com.example.checkers.DatabaseUtils.getGuestUsername;
-import static com.example.checkers.DatabaseUtils.isHost;
-import static com.example.checkers.DatabaseUtils.updateBlackTurnInDb;
-import static com.example.checkers.DatabaseUtils.uploadPieceLocationToDb;
+import static com.example.checkers.DBUtils.addDataToDatabase;
+import static com.example.checkers.DBUtils.deleteAllDocumentsInCollection;
+import static com.example.checkers.DBUtils.getGuestUsername;
+import static com.example.checkers.DBUtils.isHost;
+import static com.example.checkers.DBUtils.updateBlackTurnInDb;
+import static com.example.checkers.DBUtils.uploadPieceLocationToDb;
 import static com.example.checkers.OnClickListenerForPieceMoves.TAG;
 import static com.example.checkers.OnClickListenerForPieceMoves.appContext;
 import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
 import static com.example.checkers.GameActivity.guestMovesUpdatesListener;
 import static com.example.checkers.GameActivity.hostMovesUpdatesListener;
 import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageViews;
-import static com.example.checkers.WaitingRoomActivity.ROOMSPATH;
-import static com.example.checkers.WaitingRoomActivity.roomListener;
-import static com.example.checkers.WaitingRoomActivity.roomRef;
-import static com.example.checkers.WaitingRoomActivity.playerName;
-import static com.example.checkers.WaitingRoomActivity.roomName;
+import static com.example.checkers.LobbyActivity.ROOMSPATH;
+import static com.example.checkers.LobbyActivity.roomListener;
+import static com.example.checkers.LobbyActivity.roomRef;
+import static com.example.checkers.LobbyActivity.playerName;
+import static com.example.checkers.LobbyActivity.roomName;
 
-import androidx.annotation.Nullable;
-
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +54,7 @@ public class Piece {
         this.isKing = false;
     }
 
-    public void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX, Board board) {
+    protected void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX, Board board) {
         rightPieceImage.setImageResource(R.drawable.possible_location_marker);
         rightPieceImage.setClickable(true);
         rightPieceImage.setOnClickListener(new View.OnClickListener() {
@@ -111,7 +105,7 @@ public class Piece {
         });
     }
 
-    public void leftDiagonal(Move leftMove, ImageView leftPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX, Board board) {
+    protected void leftDiagonal(Move leftMove, ImageView leftPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX, Board board) {
         leftPieceImage.setImageResource(R.drawable.possible_location_marker);
         leftPieceImage.setClickable(true);
         leftPieceImage.setOnClickListener(new View.OnClickListener() {
@@ -163,7 +157,7 @@ public class Piece {
         });
     }
 
-    public void clearPossibleLocationMarkers(Board board) {
+    protected void clearPossibleLocationMarkers(Board board) {
         for (int i = 0; i < Board.SIZE; i++) {
             for (int j = 0; j < Board.SIZE; j++) {
                 if (Logic.isTileForChecker(i, j)) {
@@ -197,7 +191,7 @@ public class Piece {
     }
 
     // responsible for removing the setOnClickListeners that we set and the player did not choose to go, so there will not be hanging listeners.
-    public void unsetOnClickLastImageViews(Board board) {
+    protected void unsetOnClickLastImageViews(Board board) {
         // how to make sure that at the place of the image there isn't also a checkers piece:
         // 1. get id of image; extract X and Y axis from it
         // 2. compare those X and Y in boardArray
@@ -234,11 +228,6 @@ public class Piece {
             }
         // black won
         if (redPieces == 0) {
-            // update in db that black won (the host)
-//            DocumentReference hostMovesUpdatesRef = gameplayRef.document("hostMovesUpdates");
-//            Map<String, Object> updateGameOver = new HashMap<>();
-//            updateGameOver.put("isGameOver", true);
-//            addDataToDatabase(updateGameOver, hostMovesUpdatesRef);
 
             // show locally on black's phone that he won
             gameOver(true);
@@ -246,10 +235,6 @@ public class Piece {
 
         // red won
         else if (blackPieces == 0) {
-//            DocumentReference guestMovesUpdatesRef = gameplayRef.document("guestMovesUpdates");
-//            Map<String, Object> updateGameOver = new HashMap<>();
-//            updateGameOver.put("isGameOver", true);
-//            addDataToDatabase(updateGameOver, guestMovesUpdatesRef);
 
             // show locally on red's phone that he won
             gameOver(false);
@@ -258,7 +243,6 @@ public class Piece {
     }
 
     public void gameOver(boolean isBlack) {
-        //Log.d(TAG, "GAMEOVERRRRRRRRR*********");
 
         boolean host = isHost(roomName, playerName);
 
@@ -268,7 +252,7 @@ public class Piece {
         gameRequestDialogBuilder.setPositiveButton("Return Back To The Lobby", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                appContext.startActivity(new Intent(appContext, WaitingRoomActivity.class));
+                appContext.startActivity(new Intent(appContext, LobbyActivity.class));
                 ((Activity) appContext).finish(); // finish GameActivity
             }
         });
@@ -291,34 +275,8 @@ public class Piece {
         gameRequestDialog = gameRequestDialogBuilder.create();
         gameRequestDialog.show();
 
-        if (host) {
-            // wait for the guest to receive "GameOver" message, only then clean up
-//            gameplayRef.document("gameUpdates").addSnapshotListener(new EventListener<DocumentSnapshot>() {
-//                @Override
-//                public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
-//                    if (error != null) {
-//                        Log.w(TAG, "Listen failed.", error);
-//                        return;
-//                    }
-//                    if (snapshot != null && snapshot.exists()) {
-//                        Boolean guestGotGameOverMsg = (Boolean) snapshot.get("GotGameOver");
-//                        if (guestGotGameOverMsg != null) { // guest got the message, the value doesn't matter
-//                            // ---CLEAN-UP AFTER GAME ENDS---
-//
-//
-//                        }
-//                    }
-//                }
-//            });
-
-            Log.d(TAG, "HOST ITS GAME OVER! U DO NOTHING ;)");
-
-        } else // for guest
+        if (!host) // for guest
         {
-//            // update host that we got the message (that the guest got the message)
-//            Map<String, Object> updates = new HashMap<>();
-//            updates.put("GotGameOver", true);
-//            addDataToDatabase(updates, gameplayRef.document("gameUpdates"));
 
             // remove the guest from the room
             Map<String, Object> updates = new HashMap<>();
@@ -343,10 +301,6 @@ public class Piece {
             hostMovesUpdatesListener.remove();
         if (guestMovesUpdatesListener != null)
             guestMovesUpdatesListener.remove();
-
-        // REMEMBER:
-        // remove listeners, each hostMovesUpdates and guestMovesUpdates.
-        // remove the guest from the room (like when the host declines or guest cancels in WaitingRoom)
     }
 
     public boolean isKing() {

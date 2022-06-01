@@ -29,18 +29,18 @@ import java.util.Objects;
 
 public class RegisterActivity extends AppCompatActivity {
     public static final String TAG = "Register";
-    protected TextView login;
-    protected Button register;
-    protected EditText mEmail;
-    protected EditText mPassword;
-    protected EditText mConfirmPassword;
-    protected EditText mUsername;
-    protected ProgressBar progressBar;
+    public TextView login;
+    public Button register;
+    public EditText mEmail;
+    public EditText mPassword;
+    public EditText mConfirmPassword;
+    public EditText mUsername;
+    public ProgressBar progressBar;
     private FirebaseAuth fAuth;
     private FirebaseFirestore fStore; // database
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
@@ -72,8 +72,8 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    protected void registerHandler()
-    {
+    // handle the onClickListener for the button
+    public void registerHandler() {
         String email = mEmail.getText().toString().trim(); // remove spaces
         String password = mPassword.getText().toString().trim();
         String confirmPassword = mConfirmPassword.getText().toString().trim();
@@ -88,17 +88,16 @@ public class RegisterActivity extends AppCompatActivity {
         // validation checks passed, now register the user in the database
 
         register.setEnabled(false); // disable any button presses when registering user
-        fAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+        fAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Context appContext = getApplicationContext();
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
                     Toast.makeText(appContext, "User created.", Toast.LENGTH_SHORT).show();
                     addUserdataToCloud(username, email);
-                    startActivity(new Intent(appContext, WaitingRoomActivity.class));
+                    startActivity(new Intent(appContext, LobbyActivity.class));
                     finish();
-                }
-                else{
+                } else {
                     Exception exception = task.getException();
                     if (exception != null)
                         Toast.makeText(appContext, "Error! " + exception.getMessage(), Toast.LENGTH_SHORT).show();
@@ -111,12 +110,12 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    protected void addUserdataToCloud(String username, String email) {
+    // add username and email to db
+    public void addUserdataToCloud(String username, String email) {
         // Create a new user with its username and email
         Map<String, Object> userData = new HashMap<>();
         userData.put("username", username);
         userData.put("email", email);
-        userData.put("isOnline", true); // beta
 
         String uid = Objects.requireNonNull(fAuth.getCurrentUser()).getUid(); // impossible to get nullptr exception because this code snippet will only be run if the user is successfully created in fAuth
         DocumentReference documentReference = fStore.collection("users").document(uid);
@@ -135,22 +134,21 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    private boolean validateFields(String email, String password, String confirmPassword)
-    {
+    // all validations
+    private boolean validateFields(String email, String password, String confirmPassword) {
         boolean isValid = true;
-        if(email.isEmpty()){
+        if (email.isEmpty()) {
             mEmail.setError("Email is Required.");
             isValid = false;
         }
-        if(password.isEmpty()){
+        if (password.isEmpty()) {
             mPassword.setError("Password is Required.");
             isValid = false;
-        }
-        else if(password.length() < 6){
+        } else if (password.length() < 6) {
             mPassword.setError("Password Must be >= 6 Characters");
             isValid = false;
         }
-        if(!confirmPassword.equals(password)){
+        if (!confirmPassword.equals(password)) {
             if (confirmPassword.isEmpty())
                 mConfirmPassword.setError("Please Confirm your Password.");
             else

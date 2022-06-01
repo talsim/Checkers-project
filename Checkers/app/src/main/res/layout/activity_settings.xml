@@ -3,22 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_horizontal"
     android:background="@color/background"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
     tools:context=".SettingsActivity">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/settings_text"
-        android:textSize="50sp"/>
+        android:textSize="50sp" />
 
     <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/vibrateID"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginStart="7dp"
         android:text="@string/vibrate_when_a_game_starts"
-        android:textSize="17sp"
-        android:id="@+id/vibrateID"/>
+        android:textSize="17sp" />
 </LinearLayout>

@@ -12,6 +12,7 @@ public class Move {
         this.endY = endY;
     }
 
+    // replace imageviews and do the transformation
     public void perform(boolean isBlack, boolean isKing) {
         GameActivity.imageViewsTiles[this.startX][this.startY].setImageResource(android.R.color.transparent);
         GameActivity.imageViewsTiles[this.startX][this.startY].setClickable(false);
@@ -27,7 +28,7 @@ public class Move {
         else if (isKing) {
             GameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_king);
             GameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.red_king_highlighted);
-        } else{
+        } else {
             GameActivity.imageViewsTiles[this.endX][this.endY].setImageResource(R.drawable.red_piece);
             GameActivity.imageViewsTiles[this.endX][this.endY].setTag(R.drawable.red_piece);
         }

@@ -17,7 +17,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String SETTINGS_PREFS = "settings";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
@@ -41,6 +41,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
+    // return to the caller activity (just finish)
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             this.finish();

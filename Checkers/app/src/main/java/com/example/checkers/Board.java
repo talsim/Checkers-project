@@ -9,7 +9,7 @@ import java.util.Objects;
 public class Board {
 
     public static final int SIZE = 8; // Board must be square-shaped (default is 8x8)
-    private Piece[][] boardArray;
+    private Piece[][] boardArray; // 2d board
 
     public Board() {
         this.boardArray = new Piece[Board.SIZE][Board.SIZE];
@@ -23,8 +23,6 @@ public class Board {
     public void setBoardArray(Piece[][] boardArray) {
         this.boardArray = boardArray;
     }
-
-
 
 
 }

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -14,9 +15,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
-import static com.example.checkers.DatabaseUtils.addDataToDatabase;
-import static com.example.checkers.DatabaseUtils.isHost;
-import static com.example.checkers.WaitingRoomActivity.roomRef;
+import static com.example.checkers.DBUtils.addDataToDatabase;
+import static com.example.checkers.DBUtils.isHost;
+import static com.example.checkers.LobbyActivity.roomRef;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,11 +52,10 @@ public class GameActivity extends AppCompatActivity {
     public static final String TAG = "GameActivity";
     public static ListenerRegistration guestMovesUpdatesListener;
     public static ListenerRegistration hostMovesUpdatesListener;
-    protected Board board;
-
+    public Board board;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         String roomName = null;
@@ -74,7 +74,7 @@ public class GameActivity extends AppCompatActivity {
 
         // set initial value for isBlackTurn (host starts as black)
         FirebaseFirestore fStore = FirebaseFirestore.getInstance();
-        DocumentReference gameUpdatesRef = fStore.collection(WaitingRoomActivity.ROOMSPATH).document(roomName).collection("gameplay").document("gameUpdates");
+        DocumentReference gameUpdatesRef = fStore.collection(LobbyActivity.ROOMSPATH).document(roomName).collection("gameplay").document("gameUpdates");
         Map<String, Object> data = new HashMap<>();
         data.put("isBlackTurn", true); //  - we can also randomize this init value to get the result of a random player to start the game (a possible feature)
         addDataToDatabase(data, gameUpdatesRef);
@@ -84,6 +84,7 @@ public class GameActivity extends AppCompatActivity {
 
     }
 
+    // set all onClick listeners on all pieces
     public void setOnClickForPieces() {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
@@ -130,6 +131,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    // listen to playerMovesUpdatesRef in the host and in the guest
     private ListenerRegistration listenDBForPieceMoves(DocumentReference playerMovesUpdatesRef, boolean isPieceBlack, Piece piece) {
 
         return playerMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -144,7 +146,7 @@ public class GameActivity extends AppCompatActivity {
                     String startAxis = (String) snapshot.get("startAxis"); // parsing the axis in the format: "X-Y"
                     Boolean isJump = (Boolean) snapshot.get("isJump");
                     Boolean isKingDb = (Boolean) snapshot.get("isKing");
-                    Boolean isGameEnd = (Boolean) snapshot.get("isGameOver");
+                    //Boolean isGameEnd = (Boolean) snapshot.get("isGameOver");
                     if (endAxis != null && startAxis != null && isKingDb != null) {
                         int startX = Integer.parseInt(startAxis.split("-")[0]);
                         int startY = Integer.parseInt(startAxis.split("-")[1]);
@@ -175,7 +177,7 @@ public class GameActivity extends AppCompatActivity {
                         piece.isGameOver(board);
 //                        if (isGameEnd != null) { // the players only update when they won, so when isGameEnd is not null, it means it must be true (so someone won)
 //                            piece.gameOver(false); // red won the game
-                       // }
+                        // }
                     }
                 }
             }
@@ -221,6 +223,5 @@ public class GameActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // back button is not allowed here.
-        // super.onBackPressed();
     }
 }

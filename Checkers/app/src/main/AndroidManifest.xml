@@ -23,10 +23,10 @@
         <activity
             android:name=".ScoresActivity"
             android:exported="false"
-            android:parentActivityName=".WaitingRoomActivity">
+            android:parentActivityName=".LobbyActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.checkers.WaitingRoomActivity" />
+                android:value="com.example.checkers.LobbyActivity" />
         </activity>
         <activity
             android:name=".GameActivity"
@@ -40,7 +40,7 @@
                 android:value="com.example.checkers.MainActivity" />
         </activity>
         <activity
-            android:name=".WaitingRoomActivity"
+            android:name=".LobbyActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity

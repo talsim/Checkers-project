@@ -1,13 +1,11 @@
 package com.example.checkers;
 
 
-
-import static com.example.checkers.OnClickListenerForPieceMoves.TAG;
 import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
-import static com.example.checkers.WaitingRoomActivity.ROOMSPATH;
-import static com.example.checkers.WaitingRoomActivity.playerName;
-import static com.example.checkers.WaitingRoomActivity.roomName;
-import static com.example.checkers.WaitingRoomActivity.roomsUpdaterViewListener;
+import static com.example.checkers.LobbyActivity.ROOMSPATH;
+import static com.example.checkers.LobbyActivity.playerName;
+import static com.example.checkers.LobbyActivity.roomName;
+import static com.example.checkers.LobbyActivity.roomsUpdaterViewListener;
 
 import android.content.Context;
 import android.util.Log;
@@ -26,7 +24,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -35,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DatabaseUtils {
+public class DBUtils {
     public static final String TAG = "DatabaseUtils";
 
     // wrapper function for update and set functions in the Firebase API
@@ -57,10 +54,12 @@ public class DatabaseUtils {
         });
     }
 
+    // checks if local playerName is equal to host name (roomName)
     public static boolean isHost(String playerName, String roomName) {
         return playerName.equals(roomName);
     }
 
+    // get from db
     public static String getGuestUsername(DocumentReference roomRef) {
         Task<DocumentSnapshot> getGuest = roomRef.get();
         while (!getGuest.isComplete()) {
@@ -75,12 +74,14 @@ public class DatabaseUtils {
         return "*GUEST*"; // couldn't get the guest username
     }
 
+    // get blackTurn and upload it to db
     public static void updateBlackTurnInDb(boolean blackTurn, CollectionReference gameplayRef) {
         Map<String, Object> gameUpdates = new HashMap<>();
         gameUpdates.put("isBlackTurn", blackTurn);
         addDataToDatabase(gameUpdates, gameplayRef.document("gameUpdates"));
     }
 
+    // upload Piece locations by the correct format
     public static void uploadPieceLocationToDb(Move move, boolean isJump, int jumpX, int jumpY, boolean isKing) {
         DocumentReference documentReference;
         if (isHost(playerName, roomName))
@@ -99,6 +100,7 @@ public class DatabaseUtils {
         addDataToDatabase(updates, documentReference);
     }
 
+    // update list view when player joins to server
     public static void updateListview(ArrayList<String> roomsList, ListView listView, Context appContext) {
         CollectionReference roomsRef = FirebaseFirestore.getInstance().collection(ROOMSPATH);
         roomsUpdaterViewListener = roomsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -120,14 +122,14 @@ public class DatabaseUtils {
             }
         });
     }
-    public static void deleteAllDocumentsInCollection(CollectionReference collectionReference)
-    {
+
+    // delete all documents in a given collectionReference
+    public static void deleteAllDocumentsInCollection(CollectionReference collectionReference) {
         collectionReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 List<DocumentSnapshot> myListOfDocuments = task.getResult().getDocuments();
-                for (DocumentSnapshot doc : myListOfDocuments)
-                {
+                for (DocumentSnapshot doc : myListOfDocuments) {
                     doc.getReference().delete().addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
