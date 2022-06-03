@@ -94,7 +94,7 @@ public class RegisterActivity extends AppCompatActivity {
                 Context appContext = getApplicationContext();
                 if (task.isSuccessful()) {
                     Toast.makeText(appContext, "User created.", Toast.LENGTH_SHORT).show();
-                    addUserdataToCloud(username, email);
+                    addUserdataToCloud(username);
                     startActivity(new Intent(appContext, LobbyActivity.class));
                     finish();
                 } else {
@@ -111,11 +111,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     // add username and email to db
-    public void addUserdataToCloud(String username, String email) {
+    public void addUserdataToCloud(String username) {
         // Create a new user with its username and email
         Map<String, Object> userData = new HashMap<>();
         userData.put("username", username);
-        userData.put("email", email);
 
         String uid = Objects.requireNonNull(fAuth.getCurrentUser()).getUid(); // impossible to get nullptr exception because this code snippet will only be run if the user is successfully created in fAuth
         DocumentReference documentReference = fStore.collection("users").document(uid);

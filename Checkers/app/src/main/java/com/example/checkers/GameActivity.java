@@ -16,7 +16,10 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import static com.example.checkers.DBUtils.addDataToDatabase;
+import static com.example.checkers.DBUtils.isGameOver;
 import static com.example.checkers.DBUtils.isHost;
+import static com.example.checkers.LobbyActivity.playerName;
+import static com.example.checkers.LobbyActivity.roomName;
 import static com.example.checkers.LobbyActivity.roomRef;
 
 import java.util.HashMap;
@@ -52,32 +55,37 @@ public class GameActivity extends AppCompatActivity {
     public static final String TAG = "GameActivity";
     public static ListenerRegistration guestMovesUpdatesListener;
     public static ListenerRegistration hostMovesUpdatesListener;
+    public static ListenerRegistration gameOverListener;
     public Board board;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-        String roomName = null;
-        String playerName = null;
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            roomName = extras.getString("roomName");
-            playerName = extras.getString("playerName");
-        }
-
 
         initImageViews();
 
         board = new Board();
-        initBoardAndDrawPieces(playerName, roomName); // init board as well as drawing the black and red pieces on it
+        initBoardAndDrawPieces(); // init board as well as drawing the black and red pieces on it
 
         // set initial value for isBlackTurn (host starts as black)
         FirebaseFirestore fStore = FirebaseFirestore.getInstance();
         DocumentReference gameUpdatesRef = fStore.collection(LobbyActivity.ROOMSPATH).document(roomName).collection("gameplay").document("gameUpdates");
         Map<String, Object> data = new HashMap<>();
-        data.put("isBlackTurn", true); //  - we can also randomize this init value to get the result of a random player to start the game (a possible feature)
+        data.put("isBlackTurn", true); // - we can also randomize this init value to get the result of a random player to start the game (a possible feature)
         addDataToDatabase(data, gameUpdatesRef);
+
+        if (isHost()) {
+            // set a listener for red's moves (guest moves) and move the red pieces accordingly
+            DocumentReference guestMovesUpdatesRef = roomRef.collection("gameplay").document("guestMovesUpdates");
+            guestMovesUpdatesListener = listenDBForPieceMoves(guestMovesUpdatesRef, false);
+        }
+        else
+        {
+            // set a listener for black's moves (host pieces) and move the black pieces accordingly
+            DocumentReference hostMovesUpdatesRef = roomRef.collection("gameplay").document("hostMovesUpdates");
+            hostMovesUpdatesListener = listenDBForPieceMoves(hostMovesUpdatesRef, true);
+        }
 
         setOnClickForPieces();
 
@@ -92,12 +100,13 @@ public class GameActivity extends AppCompatActivity {
                 if (currPiece != null) {
                     imageViewsTiles[x][y].setOnClickListener(new OnClickListenerForPieceMoves(currPiece, board));
                 }
+
             }
         }
     }
 
     // Responsible for drawing the pieces on the board
-    public void initBoardAndDrawPieces(String playerName, String roomName) {
+    public void initBoardAndDrawPieces() {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
                 // red pieces
@@ -105,13 +114,13 @@ public class GameActivity extends AppCompatActivity {
                     imageViewsTiles[x][y].setImageResource(R.drawable.red_piece);
                     board.getBoardArray()[x][y] = new Piece(x, y, false);
 
-                    if (!isHost(playerName, roomName)) {
+
+                    /** NOT GOOOOOOODDDD!!!!!!!!!!!!!**/
+/*                    if (!isHost()) {
                         // set a listener for black's moves (host pieces) and move the black pieces accordingly
                         DocumentReference hostMovesUpdatesRef = roomRef.collection("gameplay").document("hostMovesUpdates");
                         hostMovesUpdatesListener = listenDBForPieceMoves(hostMovesUpdatesRef, true, board.getBoardArray()[x][y]);
-
-                    }
-
+                    }*/
                 }
 
 
@@ -120,11 +129,12 @@ public class GameActivity extends AppCompatActivity {
                     imageViewsTiles[x][y].setImageResource(R.drawable.black_piece);
                     board.getBoardArray()[x][y] = new Piece(x, y, true);
 
-                    if (isHost(playerName, roomName)) {
+                    /** NOT GOOOOOOODDDD!!!!!!!!!!!!!**/
+/*                    if (isHost()) {
                         // set a listener for red's moves (guest moves) and move the red pieces accordingly
                         DocumentReference guestMovesUpdatesRef = roomRef.collection("gameplay").document("guestMovesUpdates");
                         guestMovesUpdatesListener = listenDBForPieceMoves(guestMovesUpdatesRef, false, board.getBoardArray()[x][y]);
-                    }
+                    }*/
                 }
 
             }
@@ -132,7 +142,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     // listen to playerMovesUpdatesRef in the host and in the guest
-    private ListenerRegistration listenDBForPieceMoves(DocumentReference playerMovesUpdatesRef, boolean isPieceBlack, Piece piece) {
+    private ListenerRegistration listenDBForPieceMoves(DocumentReference playerMovesUpdatesRef, boolean isPieceBlack) {
 
         return playerMovesUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -146,15 +156,14 @@ public class GameActivity extends AppCompatActivity {
                     String startAxis = (String) snapshot.get("startAxis"); // parsing the axis in the format: "X-Y"
                     Boolean isJump = (Boolean) snapshot.get("isJump");
                     Boolean isKingDb = (Boolean) snapshot.get("isKing");
-                    //Boolean isGameEnd = (Boolean) snapshot.get("isGameOver");
                     if (endAxis != null && startAxis != null && isKingDb != null) {
+                        // parser
                         int startX = Integer.parseInt(startAxis.split("-")[0]);
                         int startY = Integer.parseInt(startAxis.split("-")[1]);
                         int endX = Integer.parseInt(endAxis.split("-")[0]);
                         int endY = Integer.parseInt(endAxis.split("-")[1]);
                         Move move = new Move(startX, startY, endX, endY);
                         move.perform(isPieceBlack, isKingDb);
-
 
                         // updating boardArray
                         board.getBoardArray()[endX][endY] = new Piece(endX, endY, isPieceBlack, isKingDb);
@@ -174,15 +183,15 @@ public class GameActivity extends AppCompatActivity {
                                     Log.d(TAG, "Couldn't get jumpedAxis");
                             }
                         }
-                        piece.isGameOver(board);
-//                        if (isGameEnd != null) { // the players only update when they won, so when isGameEnd is not null, it means it must be true (so someone won)
-//                            piece.gameOver(false); // red won the game
-                        // }
+                        isGameOver(board);
                     }
+
+
                 }
             }
         });
     }
+
 
     private void initImageViews() {
 
@@ -223,5 +232,12 @@ public class GameActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // back button is not allowed here.
+    }
+
+    @Override
+    protected void onStop() {
+        if (gameOverListener != null)
+            gameOverListener.remove();
+        super.onStop();
     }
 }

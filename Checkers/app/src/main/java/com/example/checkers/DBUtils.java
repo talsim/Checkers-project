@@ -1,13 +1,24 @@
 package com.example.checkers;
 
 
+import static com.example.checkers.GameActivity.gameOverListener;
+import static com.example.checkers.GameActivity.guestMovesUpdatesListener;
+import static com.example.checkers.GameActivity.hostMovesUpdatesListener;
+import static com.example.checkers.LobbyActivity.roomListener;
+import static com.example.checkers.LobbyActivity.roomRef;
+import static com.example.checkers.OnClickListenerForPieceMoves.TAG;
+import static com.example.checkers.OnClickListenerForPieceMoves.appContext;
 import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
 import static com.example.checkers.LobbyActivity.ROOMSPATH;
 import static com.example.checkers.LobbyActivity.playerName;
 import static com.example.checkers.LobbyActivity.roomName;
 import static com.example.checkers.LobbyActivity.roomsUpdaterViewListener;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -22,6 +33,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -55,12 +67,19 @@ public class DBUtils {
     }
 
     // checks if local playerName is equal to host name (roomName)
-    public static boolean isHost(String playerName, String roomName) {
+    public static boolean isHost() {
         return playerName.equals(roomName);
     }
 
+    // returns true if playerName is the winner of the game, else otherwise.
+    public static boolean isWinner(String nameOfWinner)
+    {
+        return playerName.equals(nameOfWinner);
+    }
+
+
     // get from db
-    public static String getGuestUsername(DocumentReference roomRef) {
+    public static String getGuestUsername() {
         Task<DocumentSnapshot> getGuest = roomRef.get();
         while (!getGuest.isComplete()) {
             System.out.println("waiting for guestUsername");
@@ -81,10 +100,10 @@ public class DBUtils {
         addDataToDatabase(gameUpdates, gameplayRef.document("gameUpdates"));
     }
 
-    // upload Piece locations by the correct format
+    // upload Piece locations by a format
     public static void uploadPieceLocationToDb(Move move, boolean isJump, int jumpX, int jumpY, boolean isKing) {
         DocumentReference documentReference;
-        if (isHost(playerName, roomName))
+        if (isHost())
             documentReference = gameplayRef.document("hostMovesUpdates"); // for host updates
         else
             documentReference = gameplayRef.document("guestMovesUpdates"); // for guest updates
@@ -140,6 +159,133 @@ public class DBUtils {
 
             }
         });
+    }
+
+    public static void isGameOver(Board board) {
+        int redPieces = 0;
+        int blackPieces = 0;
+        for (int i = 0; i < Board.SIZE; i++)
+            for (int j = 0; j < Board.SIZE; j++) {
+                if (board.getBoardArray()[i][j] != null) {
+                    if (board.getBoardArray()[i][j].isBlack())
+                        blackPieces++;
+                    else
+                        redPieces++;
+                }
+            }
+        // black won
+        if (redPieces == 0) {
+
+            // show locally on black's phone that he won
+            gameOver(true);
+        }
+
+        // red won
+        else if (blackPieces == 0) {
+
+            // show locally on red's phone that he won
+            gameOver(false);
+        }
+
+    }
+
+    public static void gameOver(boolean isBlack) {
+
+        boolean host = isHost();
+        String roomNameBak = roomName;
+        String winner;
+        DocumentReference gameUpdates = FirebaseFirestore.getInstance().collection(LobbyActivity.ROOMSPATH).document(roomName).collection("gameplay").document("gameUpdates");
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(appContext, AlertDialog.THEME_HOLO_LIGHT);
+        builder.setCancelable(false);
+        builder.setTitle("Game is Over!");
+        builder.setPositiveButton("Return Back To The Lobby", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                appContext.startActivity(new Intent(appContext, LobbyActivity.class));
+                ((Activity) appContext).finish(); // finish GameActivity
+            }
+        });
+
+        // gameover tactic:
+        // the winner starts to listen for "finish" in gameUpdates.
+        // the loser finishes everything he needs, and then uploads "finish" to gameUpdates location.
+        // the winner gets the "finish" from the loser and then removes the room completely.
+        // goodLuck! :)
+
+        if (isBlack) {
+            // show popup that the host won (roomName = hostname)
+            String hostUsername = roomName;
+            winner = hostUsername; // winner is host
+            builder.setMessage(hostUsername + " has won the game! he is probably better.");
+        } else {
+            // show popup that the guest won (getGuestUsername())
+            String guestUsername;
+            if (host) // on the host phone (he doesn't have the guest's username, so he has to get it from db
+                guestUsername = getGuestUsername();
+            else // on the guest phone (the local username is stored in playerName)
+                guestUsername = playerName;
+
+            winner = guestUsername; // winner is guest
+            builder.setMessage(guestUsername + " has won the game! he is probably better.");
+        }
+        AlertDialog gameFinishedDialog;
+        gameFinishedDialog = builder.create();
+        gameFinishedDialog.show();
+
+        if (isWinner(winner)) {
+            // start listening for "finish" message from the loser.
+            gameOverListener = gameUpdates.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                    if (error != null) {
+                        Log.w(TAG, "Listen failed.", error);
+                        return;
+                    }
+                    if (snapshot != null && snapshot.exists()) {
+                        Boolean isFinish = (Boolean) snapshot.get("finish");
+                        if (isFinish != null) // loser is finished, remove the room.
+                        {
+                            Log.d(TAG, "GOT finish MESSAGE, REMOVING ROOM");
+                            Map<String, Object> updates = new HashMap<>();
+                            updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
+                            updates.put("isInGame", false); // update isInGame to false
+                            addDataToDatabase(updates, FirebaseFirestore.getInstance().collection(ROOMSPATH).document(roomNameBak));
+
+                            deleteAllDocumentsInCollection(gameplayRef); // remove all gameplay documents that the host and guest created (cleaning-up)
+                        }
+                    }
+                }
+            });
+
+        }
+
+
+        if (!host) // for the guest
+        {
+
+            // change roomName back to guest's name
+            roomName = playerName;
+            roomRef = FirebaseFirestore.getInstance().collection(ROOMSPATH).document(roomName);
+
+            // remove room listener for guest
+            roomListener.remove();
+        }
+
+        if (!isWinner(winner)) // if i'm the loser
+        {
+            // upload "finish" message
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("finish", true);
+            addDataToDatabase(updates, gameUpdates);
+        }
+
+        // clean-up stuff
+        if (hostMovesUpdatesListener != null)
+            hostMovesUpdatesListener.remove();
+        if (guestMovesUpdatesListener != null)
+            guestMovesUpdatesListener.remove();
     }
 
 

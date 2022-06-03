@@ -19,16 +19,12 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
     public static Context appContext; // for showing dialogs
     public Piece piece;
     private final Board board;
-    private final String roomName;
-    private final String playerName;
     public static CollectionReference gameplayRef;
 
 
     public OnClickListenerForPieceMoves(Piece piece, Board board) {
         this.piece = piece;
         this.board = board;
-        this.roomName = LobbyActivity.roomName;
-        this.playerName = LobbyActivity.playerName;
         gameplayRef = roomRef.collection("gameplay");
         appContext = null;
         lastUsedImageViews = new ImageView[10];
@@ -45,7 +41,7 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
         this.piece.clearPossibleLocationMarkers(board);
         this.piece.unsetOnClickLastImageViews(board);
 
-        if (isHost(playerName, roomName)) // for the host (for black)
+        if (isHost()) // for the host (for black)
         {
             if (isBlack && getIsBlackTurn()) {
                 highlightPiece(true, isKing, pieceImage);
@@ -96,6 +92,8 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
 //            }
 //        }
     }
+
+
 
     private void highlightPiece(boolean isBlack, boolean isKing, ImageView piece) {
         if (isBlack) {

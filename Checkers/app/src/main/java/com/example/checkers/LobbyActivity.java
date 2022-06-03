@@ -1,6 +1,7 @@
 package com.example.checkers;
 
 import static com.example.checkers.DBUtils.addDataToDatabase;
+import static com.example.checkers.DBUtils.deleteAllDocumentsInCollection;
 import static com.example.checkers.DBUtils.isHost;
 import static com.example.checkers.DBUtils.getGuestUsername;
 import static com.example.checkers.DBUtils.updateListview;
@@ -70,6 +71,7 @@ public class LobbyActivity extends AppCompatActivity {
     public ListView listView;
     public static String playerName;
     public static String roomName;
+    public ArrayList<String> roomsList = new ArrayList<>();
     public DocumentReference hostUpdatesRef;
     public DocumentReference guestUpdatesRef;
 
@@ -106,6 +108,45 @@ public class LobbyActivity extends AppCompatActivity {
 
         updateListview(roomsList, listView, getApplicationContext());
     }
+
+
+//    @Override
+//    public void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_lobby);
+//
+//        listView = findViewById(R.id.listViewPlayers);
+//        fStore = FirebaseFirestore.getInstance();
+//        broadcastReceiver = new MyBroadcastReceiver(roomsList, listView, getApplicationContext());
+//        registerBroadcastListener();
+//
+//    }
+
+//    @Override
+//    protected void onStart() {
+//        initNavHeader();
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                // join an existing room and add yourself as guest
+//                String otherPlayerName = roomsList.get(position);
+//                if (!otherPlayerName.equals(playerName)) // if the player is not challenging himself
+//                {
+//                    roomName = otherPlayerName;
+//                    roomRef = fStore.collection(ROOMSPATH).document(roomName);
+//                    Map<String, Object> userData = new HashMap<>();
+//                    userData.put("guest", playerName);
+//                    userData.put("isInGame", true);
+//                    addDataToDatabase(userData, roomRef);
+//                    listenForRoomUpdates();
+//                } else // if the player IS challenging himself, just tell him he can't.
+//                    Toast.makeText(getApplicationContext(), "Challenge... yourself? :)", Toast.LENGTH_LONG).show();
+//            }
+//        });
+//
+//        updateListview(roomsList, listView, getApplicationContext());
+//        super.onStart();
+//    }
 
     // register broadcast listener
     public void registerBroadcastListener() {
@@ -159,17 +200,29 @@ public class LobbyActivity extends AppCompatActivity {
     public void listenForRoomUpdates() {
         roomListener = roomRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
                 if (error != null) {
                     Log.w(TAG, "Listen failed.", error);
                     return;
                 }
                 Log.d(TAG, "listenForRoomsUpdates");
-                if (getIsInGame()) // if a guest joined
-                {
-                    Log.d(TAG, "sending request to host");
-                    gameInvitationHandler();
+                if (snapshot != null && snapshot.exists()) {
+
+                    if (getIsInGame()) // if a guest joined
+                    {
+                        Log.d(TAG, "sending request to host");
+                        gameInvitationHandler();
+                    }
+
+//                    Boolean isInGame = (Boolean) snapshot.get("isInGame");
+//                    if (isInGame != null && isInGame) // if a guest joined
+//                    {
+//                        gameInvitationHandler();
+//                    }
                 }
+//                else if (getIsInGame()) // if snapshot is SOMEHOW broken and we cannot read from it isInGame's value, get it manually.
+//                    gameInvitationHandler();
+
             }
         });
     }
@@ -187,9 +240,9 @@ public class LobbyActivity extends AppCompatActivity {
         guestUpdatesRef = roomRef.collection("guestUpdates").document("gameStatus");
 
 
-        if (isHost(playerName, roomName)) // for the host
+        if (isHost()) // for the host
         {
-            String guestUsername = getGuestUsername(roomRef);
+            String guestUsername = getGuestUsername();
 
             gameRequestDialogBuilder.setMessage(guestUsername + " has challenged you to a game!");
             gameRequestDialogBuilder.setTitle("You've Been Challenged");
@@ -346,15 +399,13 @@ public class LobbyActivity extends AppCompatActivity {
             }
         }
 
-        if (!isHost(playerName, roomName)) // delete the guest's room when starting a game
+        if (!isHost()) // delete the guest's room when starting a game
         {
             DocumentReference guestRoomRef = fStore.collection(ROOMSPATH).document(playerName);
             guestRoomRef.delete();
         }
 
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
-        intent.putExtra("roomName", roomName);
-        intent.putExtra("playerName", playerName);
         startActivity(intent);
     }
 
@@ -429,7 +480,7 @@ public class LobbyActivity extends AppCompatActivity {
 
     // remove room only if not in game
     public void disconnectUser() {
-        if (isHost(playerName, roomName))
+        if (isHost())
             if (!getIsInGame())
                 roomRef.delete();
 
@@ -472,6 +523,7 @@ public class LobbyActivity extends AppCompatActivity {
             guestUpdatesRef.delete();
         if (hostUpdatesRef != null)
             hostUpdatesRef.delete();
+
         super.onStop();
     }
 
@@ -481,14 +533,22 @@ public class LobbyActivity extends AppCompatActivity {
         Log.d(TAG, "ONRESUME: USER IS ONLINE AGAIN");
         connectUser();
 
-
         super.onResume();
     }
 
+//    @Override
+//    protected void onPause() {
+//        if (roomListener != null)
+//            roomListener.remove();
+//
+//        super.onPause();
+//    }
+
     @Override
-    public void onDestroy() {
+    public void onDestroy() { // this is not always called!!!
         unregisterBroadcastListener();
         disconnectUser();
+
         super.onDestroy();
 
     }

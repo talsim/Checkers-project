@@ -11,10 +11,14 @@ import android.widget.ImageView;
 
 import static com.example.checkers.DBUtils.addDataToDatabase;
 import static com.example.checkers.DBUtils.deleteAllDocumentsInCollection;
+import static com.example.checkers.DBUtils.gameOver;
 import static com.example.checkers.DBUtils.getGuestUsername;
+import static com.example.checkers.DBUtils.isGameOver;
 import static com.example.checkers.DBUtils.isHost;
+import static com.example.checkers.DBUtils.isWinner;
 import static com.example.checkers.DBUtils.updateBlackTurnInDb;
 import static com.example.checkers.DBUtils.uploadPieceLocationToDb;
+import static com.example.checkers.GameActivity.gameOverListener;
 import static com.example.checkers.OnClickListenerForPieceMoves.TAG;
 import static com.example.checkers.OnClickListenerForPieceMoves.appContext;
 import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
@@ -27,8 +31,15 @@ import static com.example.checkers.LobbyActivity.roomRef;
 import static com.example.checkers.LobbyActivity.playerName;
 import static com.example.checkers.LobbyActivity.roomName;
 
+import androidx.annotation.Nullable;
+
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,8 +95,6 @@ public class Piece {
 
                 rightMove.perform(isBlack, board.getBoardArray()[endX][endY].isKing());
 
-                isGameOver(board);
-
                 // set onClick for the new piece (location)
                 rightPieceImage.setClickable(true);
                 rightPieceImage.setOnClickListener(new View.OnClickListener() {
@@ -101,6 +110,8 @@ public class Piece {
 
                 // upload new piece location to db
                 uploadPieceLocationToDb(rightMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());
+
+                isGameOver(board);
             }
         });
     }
@@ -136,8 +147,6 @@ public class Piece {
 
                 leftMove.perform(isBlack, board.getBoardArray()[endX][endY].isKing());
 
-                isGameOver(board);
-
                 // set onClick for the new piece (location)
                 leftPieceImage.setClickable(true);
                 leftPieceImage.setOnClickListener(new View.OnClickListener() {
@@ -153,6 +162,8 @@ public class Piece {
 
                 // upload new piece location to db
                 uploadPieceLocationToDb(leftMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());
+
+                isGameOver(board);
             }
         });
     }
@@ -214,94 +225,9 @@ public class Piece {
         }
     }
 
-    public void isGameOver(Board board) {
-        int redPieces = 0;
-        int blackPieces = 0;
-        for (int i = 0; i < Board.SIZE; i++)
-            for (int j = 0; j < Board.SIZE; j++) {
-                if (board.getBoardArray()[i][j] != null) {
-                    if (board.getBoardArray()[i][j].isBlack())
-                        blackPieces++;
-                    else
-                        redPieces++;
-                }
-            }
-        // black won
-        if (redPieces == 0) {
-
-            // show locally on black's phone that he won
-            gameOver(true);
-        }
-
-        // red won
-        else if (blackPieces == 0) {
-
-            // show locally on red's phone that he won
-            gameOver(false);
-        }
-
-    }
-
-    public void gameOver(boolean isBlack) {
-
-        boolean host = isHost(roomName, playerName);
-
-        AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(appContext, AlertDialog.THEME_HOLO_LIGHT);
-        gameRequestDialogBuilder.setCancelable(false);
-        gameRequestDialogBuilder.setTitle("Game is Over!");
-        gameRequestDialogBuilder.setPositiveButton("Return Back To The Lobby", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                appContext.startActivity(new Intent(appContext, LobbyActivity.class));
-                ((Activity) appContext).finish(); // finish GameActivity
-            }
-        });
-
-        if (isBlack) {
-            // show popup that the host won (roomName = hostname)
-            String hostUsername = roomName;
-            gameRequestDialogBuilder.setMessage(hostUsername + " has won the game! he is probably better.");
-        } else {
-            // show popup that the guest won (getGuestUsername())
-            String guestUsername;
-            if (host) // on the host phone (he doesn't have the guest's username, so he has to get it from db
-                guestUsername = getGuestUsername(roomRef);
-            else // on the guest phone (the local username is stored in playerName)
-                guestUsername = playerName;
-
-            gameRequestDialogBuilder.setMessage(guestUsername + " has won the game! he is probably better.");
-        }
-        AlertDialog gameRequestDialog;
-        gameRequestDialog = gameRequestDialogBuilder.create();
-        gameRequestDialog.show();
-
-        if (!host) // for guest
-        {
-
-            // remove the guest from the room
-            Map<String, Object> updates = new HashMap<>();
-            updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
-            updates.put("isInGame", false); // update isInGame to false
-            addDataToDatabase(updates, roomRef);
-
-            deleteAllDocumentsInCollection(gameplayRef); // remove all gameplay documents that the host and guest created (cleaning-up)
-
-            // change roomName back to guest's name
-            roomName = playerName;
-            roomRef = FirebaseFirestore.getInstance().collection(ROOMSPATH).document(roomName);
-
-            // remove room listener for guest
-            roomListener.remove();
 
 
-        }
 
-        // clean-up stuff
-        if (hostMovesUpdatesListener != null)
-            hostMovesUpdatesListener.remove();
-        if (guestMovesUpdatesListener != null)
-            guestMovesUpdatesListener.remove();
-    }
 
     public boolean isKing() {
         return this.isKing;
