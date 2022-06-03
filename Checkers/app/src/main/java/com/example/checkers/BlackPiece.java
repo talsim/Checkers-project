@@ -3,12 +3,13 @@ package com.example.checkers;
 import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageViews;
 
 import android.widget.ImageView;
+import android.widget.TextView;
 
 // class that defines a black piece
 public class BlackPiece extends Piece {
 
-    public BlackPiece(int x, int y, boolean isBlack, boolean isKing) {
-        super(x, y, isBlack, isKing);
+    public BlackPiece(int x, int y, boolean isBlack, boolean isKing, TextView currentTurn) {
+        super(x, y, isBlack, isKing, currentTurn);
     }
 
     public void move(Board board) {

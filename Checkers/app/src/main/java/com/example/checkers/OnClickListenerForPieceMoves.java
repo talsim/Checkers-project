@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
@@ -18,13 +19,15 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
     public static ImageView[] lastUsedImageViews; // for removing the setOnClickListeners that we set and the player did not choose, so there will not be hanging listeners.
     public static Context appContext; // for showing dialogs
     public Piece piece;
+    public TextView currentTurn;
     private final Board board;
     public static CollectionReference gameplayRef;
 
 
-    public OnClickListenerForPieceMoves(Piece piece, Board board) {
+    public OnClickListenerForPieceMoves(Piece piece, Board board, TextView currentTurn) {
         this.piece = piece;
         this.board = board;
+        this.currentTurn = currentTurn;
         gameplayRef = roomRef.collection("gameplay");
         appContext = null;
         lastUsedImageViews = new ImageView[10];
@@ -44,29 +47,34 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
         if (isHost()) // for the host (for black)
         {
             if (isBlack && getIsBlackTurn()) {
+                currentTurn.setText(R.string.your_turn);
                 highlightPiece(true, isKing, pieceImage);
                 if (!isKing) {
                     // move black
-                    this.piece = new BlackPiece(x, y, true, false);
+                    this.piece = new BlackPiece(x, y, true, false, currentTurn);
                     ((BlackPiece) this.piece).move(board);
                 } else {
-                    this.piece = new KingPiece(x, y, true);
+                    this.piece = new KingPiece(x, y, true, currentTurn);
                     ((KingPiece) this.piece).move(board);
                 }
-            }
+            } else
+                currentTurn.setText(R.string.not_your_turn);
 
         } else // for the guest (for red)
         {
             if (!isBlack && !getIsBlackTurn()) {
+                currentTurn.setText(R.string.your_turn);
                 highlightPiece(false, isKing, pieceImage);
                 if (!isKing) {
-                    this.piece = new RedPiece(x, y, false, false);
+                    this.piece = new RedPiece(x, y, false, false, currentTurn);
                     ((RedPiece) this.piece).move(board);
                 } else {
-                    this.piece = new KingPiece(x, y, false);
+                    this.piece = new KingPiece(x, y, false, currentTurn);
                     ((KingPiece) this.piece).move(board);
                 }
             }
+            else
+                currentTurn.setText(R.string.not_your_turn);
         }
 
 //        ****play locally****
@@ -92,7 +100,6 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
 //            }
 //        }
     }
-
 
 
     private void highlightPiece(boolean isBlack, boolean isKing, ImageView piece) {
@@ -127,7 +134,7 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
             DocumentSnapshot isBlackTurnResult = getTurn.getResult();
             Boolean val = (Boolean) isBlackTurnResult.get("isBlackTurn");
             if (val != null)
-                return (boolean) val;
+                return val;
         }
         Log.d(TAG, "Error getting document: ", getTurn.getException());
         throw new IllegalStateException("couldn't get isBlackTurn from db");

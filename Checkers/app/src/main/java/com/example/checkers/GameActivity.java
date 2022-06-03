@@ -56,12 +56,15 @@ public class GameActivity extends AppCompatActivity {
     public static ListenerRegistration guestMovesUpdatesListener;
     public static ListenerRegistration hostMovesUpdatesListener;
     public static ListenerRegistration gameOverListener;
+    public TextView currentTurn;
     public Board board;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        currentTurn = findViewById(R.id.currentTurn);
 
         initImageViews();
 
@@ -76,12 +79,16 @@ public class GameActivity extends AppCompatActivity {
         addDataToDatabase(data, gameUpdatesRef);
 
         if (isHost()) {
+            currentTurn.setText(R.string.your_turn);
+
             // set a listener for red's moves (guest moves) and move the red pieces accordingly
             DocumentReference guestMovesUpdatesRef = roomRef.collection("gameplay").document("guestMovesUpdates");
             guestMovesUpdatesListener = listenDBForPieceMoves(guestMovesUpdatesRef, false);
         }
         else
         {
+            currentTurn.setText(R.string.not_your_turn);
+
             // set a listener for black's moves (host pieces) and move the black pieces accordingly
             DocumentReference hostMovesUpdatesRef = roomRef.collection("gameplay").document("hostMovesUpdates");
             hostMovesUpdatesListener = listenDBForPieceMoves(hostMovesUpdatesRef, true);
@@ -92,13 +99,13 @@ public class GameActivity extends AppCompatActivity {
 
     }
 
-    // set all onClick listeners on all pieces
+    // set onClick listeners on all pieces
     public void setOnClickForPieces() {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
                 Piece currPiece = board.getBoardArray()[x][y];
                 if (currPiece != null) {
-                    imageViewsTiles[x][y].setOnClickListener(new OnClickListenerForPieceMoves(currPiece, board));
+                    imageViewsTiles[x][y].setOnClickListener(new OnClickListenerForPieceMoves(currPiece, board, currentTurn));
                 }
 
             }
@@ -112,7 +119,7 @@ public class GameActivity extends AppCompatActivity {
                 // red pieces
                 if (x <= 2 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.red_piece);
-                    board.getBoardArray()[x][y] = new Piece(x, y, false);
+                    board.getBoardArray()[x][y] = new Piece(x, y, false, currentTurn);
 
 
                     /** NOT GOOOOOOODDDD!!!!!!!!!!!!!**/
@@ -127,7 +134,7 @@ public class GameActivity extends AppCompatActivity {
                 // black pieces
                 if (x >= 5 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.black_piece);
-                    board.getBoardArray()[x][y] = new Piece(x, y, true);
+                    board.getBoardArray()[x][y] = new Piece(x, y, true, currentTurn);
 
                     /** NOT GOOOOOOODDDD!!!!!!!!!!!!!**/
 /*                    if (isHost()) {
@@ -166,7 +173,7 @@ public class GameActivity extends AppCompatActivity {
                         move.perform(isPieceBlack, isKingDb);
 
                         // updating boardArray
-                        board.getBoardArray()[endX][endY] = new Piece(endX, endY, isPieceBlack, isKingDb);
+                        board.getBoardArray()[endX][endY] = new Piece(endX, endY, isPieceBlack, isKingDb, currentTurn);
                         board.getBoardArray()[startX][startY] = null; // remove old piece
 
                         if (isJump != null) {
@@ -183,10 +190,9 @@ public class GameActivity extends AppCompatActivity {
                                     Log.d(TAG, "Couldn't get jumpedAxis");
                             }
                         }
+                        currentTurn.setText(R.string.your_turn);
                         isGameOver(board);
                     }
-
-
                 }
             }
         });

@@ -1049,8 +1049,8 @@
         android:layout_weight="1"
         android:gravity="center"
         android:textColor="@color/lightwhite"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:textSize="20sp"
+         />
 
     <Button
         android:id="@+id/forfeit_button"

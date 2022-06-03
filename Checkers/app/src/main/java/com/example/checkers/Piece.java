@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import static com.example.checkers.DBUtils.addDataToDatabase;
 import static com.example.checkers.DBUtils.deleteAllDocumentsInCollection;
@@ -50,19 +51,22 @@ public class Piece {
     protected int y;
     protected boolean isKing;
     protected boolean isBlack; // color-wise
+    private final TextView currentTurn;
 
-    public Piece(int x, int y, boolean isBlack, boolean isKing) {
+    public Piece(int x, int y, boolean isBlack, boolean isKing, TextView currentTurn) {
         this.x = x;
         this.y = y;
         this.isBlack = isBlack;
         this.isKing = isKing;
+        this.currentTurn = currentTurn;
     }
 
-    public Piece(int x, int y, boolean isBlack) {
+    public Piece(int x, int y, boolean isBlack, TextView currentTurn) {
         this.x = x;
         this.y = y;
         this.isBlack = isBlack;
         this.isKing = false;
+        this.currentTurn = currentTurn;
     }
 
     protected void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX, Board board) {
@@ -77,7 +81,7 @@ public class Piece {
                 int startY = rightMove.getStartY();
 
                 // updating boardArray
-                board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, isKing);
+                board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, isKing, currentTurn);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
                 int jumpedPieceY = startY + 1;
                 if (isJump) {
@@ -100,13 +104,14 @@ public class Piece {
                 rightPieceImage.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        OnClickListenerForPieceMoves onClickListenerForPieceMoves = new OnClickListenerForPieceMoves(board.getBoardArray()[endX][endY], board);
+                        OnClickListenerForPieceMoves onClickListenerForPieceMoves = new OnClickListenerForPieceMoves(board.getBoardArray()[endX][endY], board, currentTurn);
                         onClickListenerForPieceMoves.displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), rightPieceImage); // recursively show more move options
                     }
                 });
 
                 // updating next turn - passing the turn to the other player
                 updateBlackTurnInDb(!isBlack, gameplayRef);
+                currentTurn.setText(R.string.not_your_turn);
 
                 // upload new piece location to db
                 uploadPieceLocationToDb(rightMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());
@@ -129,7 +134,7 @@ public class Piece {
 
 
                 // updating boardArray
-                board.getBoardArray()[endX][endY] = new Piece(/*leftPieceImage,*/ endX, endY, isBlack, isKing);
+                board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, isKing, currentTurn);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
                 int jumpedPieceY = startY - 1;
                 if (isJump) {
@@ -152,13 +157,14 @@ public class Piece {
                 leftPieceImage.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        OnClickListenerForPieceMoves onClickListenerForPieceMoves = new OnClickListenerForPieceMoves(board.getBoardArray()[endX][endY], board);
+                        OnClickListenerForPieceMoves onClickListenerForPieceMoves = new OnClickListenerForPieceMoves(board.getBoardArray()[endX][endY], board, currentTurn);
                         onClickListenerForPieceMoves.displayMoveOptionsAndMove(endX, endY, isBlack, board.getBoardArray()[endX][endY].isKing(), leftPieceImage); // recursively show more move options
                     }
                 });
 
                 // updating next turn - passing the turn to the other player
                 updateBlackTurnInDb(!isBlack, gameplayRef);
+                currentTurn.setText(R.string.not_your_turn);
 
                 // upload new piece location to db
                 uploadPieceLocationToDb(leftMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());

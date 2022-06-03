@@ -3,11 +3,12 @@ package com.example.checkers;
 import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageViews;
 
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class KingPiece extends Piece {
 
-    public KingPiece(int x, int y, boolean isBlack) {
-        super(x, y, isBlack);
+    public KingPiece(int x, int y, boolean isBlack, TextView currentTurn) {
+        super(x, y, isBlack, currentTurn);
     }
 
     public void move(Board board) {

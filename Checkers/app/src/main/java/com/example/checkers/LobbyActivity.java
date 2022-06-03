@@ -71,7 +71,7 @@ public class LobbyActivity extends AppCompatActivity {
     public ListView listView;
     public static String playerName;
     public static String roomName;
-    public ArrayList<String> roomsList = new ArrayList<>();
+
     public DocumentReference hostUpdatesRef;
     public DocumentReference guestUpdatesRef;
 

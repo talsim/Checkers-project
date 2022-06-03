@@ -15,4 +15,6 @@
     <string name="contact_developer">Contact Developer</string>
     <string name="checkers_multiplayer">Checkers Multiplayer</string>
     <string name="vibrate_when_a_game_starts">Vibrate when a game starts</string>
+    <string name="your_turn">It\'s your turn to play!</string>
+    <string name="not_your_turn">Opponents turn</string>
 </resources>
