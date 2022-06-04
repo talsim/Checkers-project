@@ -527,14 +527,14 @@ public class LobbyActivity extends AppCompatActivity {
         super.onStop();
     }
 
-    @Override
-    public void onResume() {
-        // rejoin player to database because he came back online.
-        Log.d(TAG, "ONRESUME: USER IS ONLINE AGAIN");
-        connectUser();
-
-        super.onResume();
-    }
+//    @Override
+//    public void onResume() {
+//        // rejoin player to database because he came back online.
+//        Log.d(TAG, "ONRESUME: USER IS ONLINE AGAIN");
+//        connectUser();
+//
+//        super.onResume();
+//    }
 
 //    @Override
 //    protected void onPause() {

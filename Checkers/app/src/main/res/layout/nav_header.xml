@@ -12,20 +12,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@mipmap/ic_launcher"
-        android:contentDescription="TODO" />
+        android:contentDescription="@string/android_icon" />
 
     <TextView
         android:id="@+id/textviewUsername"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:paddingTop="8dp"
-         android:text="username"
+         android:text="@string/username"
          android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
     <TextView
         android:id="@+id/textviewEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="email"/>
+        android:text="@string/email"/>
 
 </LinearLayout>

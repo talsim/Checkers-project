@@ -120,14 +120,6 @@ public class GameActivity extends AppCompatActivity {
                 if (x <= 2 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.red_piece);
                     board.getBoardArray()[x][y] = new Piece(x, y, false, currentTurn);
-
-
-                    /** NOT GOOOOOOODDDD!!!!!!!!!!!!!**/
-/*                    if (!isHost()) {
-                        // set a listener for black's moves (host pieces) and move the black pieces accordingly
-                        DocumentReference hostMovesUpdatesRef = roomRef.collection("gameplay").document("hostMovesUpdates");
-                        hostMovesUpdatesListener = listenDBForPieceMoves(hostMovesUpdatesRef, true, board.getBoardArray()[x][y]);
-                    }*/
                 }
 
 
@@ -135,13 +127,6 @@ public class GameActivity extends AppCompatActivity {
                 if (x >= 5 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.black_piece);
                     board.getBoardArray()[x][y] = new Piece(x, y, true, currentTurn);
-
-                    /** NOT GOOOOOOODDDD!!!!!!!!!!!!!**/
-/*                    if (isHost()) {
-                        // set a listener for red's moves (guest moves) and move the red pieces accordingly
-                        DocumentReference guestMovesUpdatesRef = roomRef.collection("gameplay").document("guestMovesUpdates");
-                        guestMovesUpdatesListener = listenDBForPieceMoves(guestMovesUpdatesRef, false, board.getBoardArray()[x][y]);
-                    }*/
                 }
 
             }
@@ -175,6 +160,9 @@ public class GameActivity extends AppCompatActivity {
                         // updating boardArray
                         board.getBoardArray()[endX][endY] = new Piece(endX, endY, isPieceBlack, isKingDb, currentTurn);
                         board.getBoardArray()[startX][startY] = null; // remove old piece
+
+                        // marking the start position (for the user)
+                        imageViewsTiles[startX][startY].setImageResource(R.drawable.possible_location_marker);
 
                         if (isJump != null) {
                             if (isJump) { // if true: there was a jump, remove the jumped piece

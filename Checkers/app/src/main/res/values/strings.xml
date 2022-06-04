@@ -16,5 +16,16 @@
     <string name="checkers_multiplayer">Checkers Multiplayer</string>
     <string name="vibrate_when_a_game_starts">Vibrate when a game starts</string>
     <string name="your_turn">It\'s your turn to play!</string>
-    <string name="not_your_turn">Opponents turn</string>
+    <string name="not_your_turn">Opponents turn.</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login_page">Login page</string>
+    <string name="new_here_create_account_here">New here? Create Account Here</string>
+    <string name="register_page">Register Page</string>
+    <string name="name">Name</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="register">Register</string>
+    <string name="already_registered_login_here">Already registered? Login Here</string>
+    <string name="username">username</string>
+    <string name="android_icon">android_icon</string>
 </resources>
