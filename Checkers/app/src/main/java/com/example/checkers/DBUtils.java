@@ -160,32 +160,32 @@ public class DBUtils {
         });
     }
 
-    public static void isGameOver(Board board) {
+    public static void isGameOver(Board board, boolean isBlackTurn) {
         int redPieces = 0;
         int blackPieces = 0;
         boolean canBlackMove = false;
         boolean canRedMove = false;
-        boolean isBlackTurn = getIsBlackTurn();
 
         for (int i = 0; i < Board.SIZE; i++)
             for (int j = 0; j < Board.SIZE; j++) {
                 if (board.getBoardArray()[i][j] != null) {
                     if (board.getBoardArray()[i][j].isBlack()) {
                         blackPieces++;
-                        if (isBlackTurn && board.getBoardArray()[i][j].canMove(board)) {
+                        if (board.getBoardArray()[i][j].canMove(board)) {
                             canBlackMove = true;
-                            break;
                         }
                     } else {
                         redPieces++;
-                        if (!isBlackTurn && board.getBoardArray()[i][j].canMove(board)) {
+                        if (board.getBoardArray()[i][j].canMove(board)) {
                             canRedMove = true;
-                            break;
                         }
                     }
 
                 }
             }
+
+        Log.d(TAG, "CAN RED MOVE: " + canRedMove);
+        Log.d(TAG, "CAN BLACK MOVE: " + canBlackMove);
         // black won
         if (redPieces == 0 || (!canRedMove && !isBlackTurn)) {
             // show locally on black's phone that he won

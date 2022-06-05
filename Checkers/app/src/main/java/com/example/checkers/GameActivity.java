@@ -158,7 +158,15 @@ public class GameActivity extends AppCompatActivity {
                         move.perform(isPieceBlack, isKingDb);
 
                         // updating boardArray
-                        board.getBoardArray()[endX][endY] = new Piece(endX, endY, isPieceBlack, isKingDb, currentTurn);
+                        Piece addedPiece;
+                        if (isKingDb)
+                            addedPiece = new KingPiece(endX, endY, isPieceBlack, currentTurn);
+                        else if (isPieceBlack)
+                            addedPiece = new BlackPiece(endX, endY, currentTurn);
+                        else
+                            addedPiece = new RedPiece(endX, endY, currentTurn);
+
+                        board.getBoardArray()[endX][endY] = addedPiece;
                         board.getBoardArray()[startX][startY] = null; // remove old piece
 
                         // marking the start position (for the user)
@@ -179,11 +187,23 @@ public class GameActivity extends AppCompatActivity {
                             }
                         }
                         currentTurn.setText(R.string.your_turn);
-                        isGameOver(board);
+                        isGameOver(board, !isPieceBlack);
                     }
                 }
             }
         });
+    }
+
+    private Piece getAddedPiece(boolean isPieceBlack, boolean isKingDb, int endX, int endY)
+    {
+        Piece addedPiece;
+        if (isKingDb)
+            addedPiece = new KingPiece(endX, endY, isPieceBlack, currentTurn);
+        else if (isPieceBlack)
+            addedPiece = new BlackPiece(endX, endY, currentTurn);
+        else
+            addedPiece = new RedPiece(endX, endY, currentTurn);
+        return addedPiece;
     }
 
 
@@ -232,6 +252,10 @@ public class GameActivity extends AppCompatActivity {
     protected void onStop() {
         if (gameOverListener != null)
             gameOverListener.remove();
+        if (hostMovesUpdatesListener != null)
+            hostMovesUpdatesListener.remove();
+        if (guestMovesUpdatesListener != null)
+            guestMovesUpdatesListener.remove();
         super.onStop();
     }
 }

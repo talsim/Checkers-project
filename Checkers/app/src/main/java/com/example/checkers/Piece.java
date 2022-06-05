@@ -92,7 +92,7 @@ public class Piece {
                 // upload new piece location to db
                 uploadPieceLocationToDb(rightMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());
 
-                isGameOver(board);
+                isGameOver(board, !isBlack);
             }
         });
     }
@@ -144,7 +144,7 @@ public class Piece {
                 // upload new piece location to db
                 uploadPieceLocationToDb(leftMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());
 
-                isGameOver(board);
+                isGameOver(board, !isBlack);
             }
         });
     }
@@ -152,7 +152,7 @@ public class Piece {
     // This function is overridden by all the subclasses of Piece, because their board-update is different.
     protected void updateBoardArray(Board board, int endX, int endY)
     {
-        board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, isKing, currentTurn);
+        board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, currentTurn);
     }
 
 
