@@ -72,8 +72,7 @@ public class DBUtils {
     }
 
     // returns true if playerName is the winner of the game, else otherwise.
-    public static boolean isWinner(String nameOfWinner)
-    {
+    public static boolean isWinner(String nameOfWinner) {
         return playerName.equals(nameOfWinner);
     }
 
@@ -164,25 +163,37 @@ public class DBUtils {
     public static void isGameOver(Board board) {
         int redPieces = 0;
         int blackPieces = 0;
+        boolean canBlackMove = false;
+        boolean canRedMove = false;
+        boolean isBlackTurn = getIsBlackTurn();
+
         for (int i = 0; i < Board.SIZE; i++)
             for (int j = 0; j < Board.SIZE; j++) {
                 if (board.getBoardArray()[i][j] != null) {
-                    if (board.getBoardArray()[i][j].isBlack())
+                    if (board.getBoardArray()[i][j].isBlack()) {
                         blackPieces++;
-                    else
+                        if (isBlackTurn && board.getBoardArray()[i][j].canMove(board)) {
+                            canBlackMove = true;
+                            break;
+                        }
+                    } else {
                         redPieces++;
+                        if (!isBlackTurn && board.getBoardArray()[i][j].canMove(board)) {
+                            canRedMove = true;
+                            break;
+                        }
+                    }
+
                 }
             }
         // black won
-        if (redPieces == 0) {
-
+        if (redPieces == 0 || (!canRedMove && !isBlackTurn)) {
             // show locally on black's phone that he won
             gameOver(true);
         }
 
         // red won
-        else if (blackPieces == 0) {
-
+        else if (blackPieces == 0 || (!canBlackMove && isBlackTurn)) {
             // show locally on red's phone that he won
             gameOver(false);
         }
@@ -196,7 +207,6 @@ public class DBUtils {
         String winner;
         DocumentReference gameUpdates = FirebaseFirestore.getInstance().collection(LobbyActivity.ROOMSPATH).document(roomName).collection("gameplay").document("gameUpdates");
 
-
         AlertDialog.Builder builder = new AlertDialog.Builder(appContext, AlertDialog.THEME_HOLO_LIGHT);
         builder.setCancelable(false);
         builder.setTitle("Game is Over!");
@@ -208,11 +218,9 @@ public class DBUtils {
             }
         });
 
-        // gameover tactic:
         // the winner starts to listen for "finish" in gameUpdates.
         // the loser finishes everything he needs, and then uploads "finish" to gameUpdates location.
         // the winner gets the "finish" from the loser and then removes the room completely.
-        // goodLuck! :)
 
         if (isBlack) {
             // show popup that the host won (roomName = hostname)
@@ -244,17 +252,7 @@ public class DBUtils {
                         return;
                     }
                     if (snapshot != null && snapshot.exists()) {
-                        Boolean isFinish = (Boolean) snapshot.get("finish");
-                        if (isFinish != null) // loser is finished, remove the room.
-                        {
-                            Log.d(TAG, "GOT finish MESSAGE, REMOVING ROOM");
-                            Map<String, Object> updates = new HashMap<>();
-                            updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
-                            updates.put("isInGame", false); // update isInGame to false
-                            addDataToDatabase(updates, FirebaseFirestore.getInstance().collection(ROOMSPATH).document(roomNameBak));
-
-                            deleteAllDocumentsInCollection(gameplayRef); // remove all gameplay documents that the host and guest created (cleaning-up)
-                        }
+                        removeRoom(roomNameBak, snapshot);
                     }
                 }
             });
@@ -289,4 +287,34 @@ public class DBUtils {
     }
 
 
+    private static void removeRoom(String roomNameBak, DocumentSnapshot snapshot) {
+        Boolean isFinish = (Boolean) snapshot.get("finish");
+        if (isFinish != null) // loser is finished, remove the room.
+        {
+            Log.d(TAG, "GOT finish MESSAGE, REMOVING ROOM");
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
+            updates.put("isInGame", false); // update isInGame to false
+            addDataToDatabase(updates, FirebaseFirestore.getInstance().collection(ROOMSPATH).document(roomNameBak));
+
+            deleteAllDocumentsInCollection(gameplayRef); // remove all gameplay documents that the host and guest created (cleaning-up)
+        }
+    }
+
+
+    public static boolean getIsBlackTurn() {
+        Task<DocumentSnapshot> getTurn = gameplayRef.document("gameUpdates").get();
+        while (!getTurn.isComplete()) {
+            System.out.println("waiting for getIsBlackTurn");
+        }
+        if (getTurn.isSuccessful()) {
+            DocumentSnapshot isBlackTurnResult = getTurn.getResult();
+            Boolean val = (Boolean) isBlackTurnResult.get("isBlackTurn");
+            if (val != null)
+                return val;
+        }
+        Log.d(TAG, "Error getting document: ", getTurn.getException());
+        throw new IllegalStateException("couldn't get isBlackTurn from db");
+    }
 }
+

@@ -1,49 +1,15 @@
 package com.example.checkers;
 
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.util.Log;
+import static com.example.checkers.DBUtils.isGameOver;
+import static com.example.checkers.DBUtils.updateBlackTurnInDb;
+import static com.example.checkers.DBUtils.uploadPieceLocationToDb;
+import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
+import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageViews;
+
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import static com.example.checkers.DBUtils.addDataToDatabase;
-import static com.example.checkers.DBUtils.deleteAllDocumentsInCollection;
-import static com.example.checkers.DBUtils.gameOver;
-import static com.example.checkers.DBUtils.getGuestUsername;
-import static com.example.checkers.DBUtils.isGameOver;
-import static com.example.checkers.DBUtils.isHost;
-import static com.example.checkers.DBUtils.isWinner;
-import static com.example.checkers.DBUtils.updateBlackTurnInDb;
-import static com.example.checkers.DBUtils.uploadPieceLocationToDb;
-import static com.example.checkers.GameActivity.gameOverListener;
-import static com.example.checkers.OnClickListenerForPieceMoves.TAG;
-import static com.example.checkers.OnClickListenerForPieceMoves.appContext;
-import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
-import static com.example.checkers.GameActivity.guestMovesUpdatesListener;
-import static com.example.checkers.GameActivity.hostMovesUpdatesListener;
-import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageViews;
-import static com.example.checkers.LobbyActivity.ROOMSPATH;
-import static com.example.checkers.LobbyActivity.roomListener;
-import static com.example.checkers.LobbyActivity.roomRef;
-import static com.example.checkers.LobbyActivity.playerName;
-import static com.example.checkers.LobbyActivity.roomName;
-
-import androidx.annotation.Nullable;
-
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Piece {
 
@@ -68,6 +34,16 @@ public class Piece {
         this.isKing = false;
         this.currentTurn = currentTurn;
     }
+
+    public boolean canMove(Board board) {
+        if (this.isKing) // if King piece : can king move?
+            return ((KingPiece) this).canMove(board);
+        else if (this.isBlack) // else if Black piece : can black move?
+            return ((BlackPiece) this).canMove(board);
+        else // else Red piece : can red move?
+            return ((RedPiece) this).canMove(board);
+    }
+
 
     protected void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX, Board board) {
         rightPieceImage.setImageResource(R.drawable.possible_location_marker);
@@ -230,9 +206,6 @@ public class Piece {
             }
         }
     }
-
-
-
 
 
     public boolean isKing() {

@@ -46,4 +46,8 @@ public class BlackPiece extends Piece {
         }
     }
 
+    @Override
+    public boolean canMove(Board board) {
+        return true;
+    }
 }

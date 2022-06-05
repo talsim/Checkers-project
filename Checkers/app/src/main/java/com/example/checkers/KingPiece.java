@@ -108,6 +108,11 @@ public class KingPiece extends Piece {
         }
     }
 
+    @Override
+    public boolean canMove(Board board) {
+        return true;
+    }
+
     // only in the eating-checks we do, we need to check differently for black or red
     private boolean isCheckerBehindNeeds2BeRedOrBlack(boolean isBlack, int x, int y, Board board) {
         if (isBlack)

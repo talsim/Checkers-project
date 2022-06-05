@@ -10,6 +10,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import static com.example.checkers.DBUtils.getIsBlackTurn;
 import static com.example.checkers.DBUtils.isHost;
 import static com.example.checkers.LobbyActivity.roomRef;
 
@@ -44,9 +45,11 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
         this.piece.clearPossibleLocationMarkers(board);
         this.piece.unsetOnClickLastImageViews(board);
 
+        boolean isBlackTurn = getIsBlackTurn();
+
         if (isHost()) // for the host (for black)
         {
-            if (isBlack && getIsBlackTurn()) {
+            if (isBlack && isBlackTurn) {
                 currentTurn.setText(R.string.your_turn);
                 highlightPiece(true, isKing, pieceImage);
                 if (!isKing) {
@@ -62,7 +65,7 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
 
         } else // for the guest (for red)
         {
-            if (!isBlack && !getIsBlackTurn()) {
+            if (!isBlack && !isBlackTurn) {
                 currentTurn.setText(R.string.your_turn);
                 highlightPiece(false, isKing, pieceImage);
                 if (!isKing) {
@@ -125,19 +128,5 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
     }
 
 
-    private boolean getIsBlackTurn() {
-        Task<DocumentSnapshot> getTurn = gameplayRef.document("gameUpdates").get();
-        while (!getTurn.isComplete()) {
-            System.out.println("waiting for getIsBlackTurn");
-        }
-        if (getTurn.isSuccessful()) {
-            DocumentSnapshot isBlackTurnResult = getTurn.getResult();
-            Boolean val = (Boolean) isBlackTurnResult.get("isBlackTurn");
-            if (val != null)
-                return val;
-        }
-        Log.d(TAG, "Error getting document: ", getTurn.getException());
-        throw new IllegalStateException("couldn't get isBlackTurn from db");
-    }
 }
 
