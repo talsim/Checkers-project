@@ -8,13 +8,28 @@ import android.widget.TextView;
 // class that defines a black piece
 public class BlackPiece extends Piece {
 
-    public BlackPiece(int x, int y, boolean isBlack, boolean isKing, TextView currentTurn) {
-        super(x, y, isBlack, isKing, currentTurn);
+    public BlackPiece(int x, int y, TextView currentTurn) {
+        super(x, y, true, false, currentTurn);
+    }
+
+    @Override
+    public boolean canMove(Board board) {
+        boolean left = isLeftDiagonalAvailable(board);
+        boolean leftJump = isLeftJumpDiagonalAvailable(board);
+        boolean right = isRightDiagonalAvailable(board);
+        boolean rightJump = isRightJumpDiagonalAvailable(board);
+
+        return left || leftJump || right || rightJump;
+    }
+
+    @Override
+    protected void updateBoardArray(Board board, int endX, int endY) {
+        board.getBoardArray()[endX][endY] = new BlackPiece(endX, endY, currentTurn);
     }
 
     public void move(Board board) {
         /* -------------------------- left diagonal -------------------------- */
-        if (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */) {
+        if (isLeftDiagonalAvailable(board)) {
             ImageView leftPieceImage = GameActivity.imageViewsTiles[x - 1][y - 1];
             lastUsedImageViews[0] = leftPieceImage;
             Move leftMove = new Move(x, y, x - 1, y - 1);
@@ -22,7 +37,7 @@ public class BlackPiece extends Piece {
         }
 
         /* -------------------------- left-JUMP diagonal -------------------------- */
-        if (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack()) {
+        if (isLeftJumpDiagonalAvailable(board)) {
             ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y - 2];
             lastUsedImageViews[1] = leftJumpPieceImage;
             Move leftJumpMove = new Move(x, y, x - 2, y - 2);
@@ -30,7 +45,7 @@ public class BlackPiece extends Piece {
         }
 
         /* -------------------------- right diagonal -------------------------- */
-        if (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */) {
+        if (isRightDiagonalAvailable(board)) {
             Move rightMove = new Move(x, y, x - 1, y + 1);
             ImageView rightPieceImage = GameActivity.imageViewsTiles[x - 1][y + 1];
             lastUsedImageViews[2] = rightPieceImage;
@@ -38,7 +53,7 @@ public class BlackPiece extends Piece {
         }
 
         /* -------------------------- right-JUMP diagonal -------------------------- */
-        if (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack()) {
+        if (isRightJumpDiagonalAvailable(board)) {
             ImageView rightJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y + 2];
             lastUsedImageViews[3] = rightJumpPieceImage;
             Move rightJumpMove = new Move(x, y, x - 2, y + 2);
@@ -46,8 +61,21 @@ public class BlackPiece extends Piece {
         }
     }
 
-    @Override
-    public boolean canMove(Board board) {
-        return true;
+    private boolean isLeftDiagonalAvailable(Board board) {
+        return (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */);
     }
+
+    private boolean isLeftJumpDiagonalAvailable(Board board) {
+        return ((Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack()));
+    }
+
+    private boolean isRightDiagonalAvailable(Board board) {
+        return (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */);
+    }
+
+    private boolean isRightJumpDiagonalAvailable(Board board) {
+        return (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack());
+    }
+
+
 }

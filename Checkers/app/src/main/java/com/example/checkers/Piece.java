@@ -17,7 +17,7 @@ public class Piece {
     protected int y;
     protected boolean isKing;
     protected boolean isBlack; // color-wise
-    private final TextView currentTurn;
+    protected final TextView currentTurn;
 
     public Piece(int x, int y, boolean isBlack, boolean isKing, TextView currentTurn) {
         this.x = x;
@@ -35,6 +35,7 @@ public class Piece {
         this.currentTurn = currentTurn;
     }
 
+
     public boolean canMove(Board board) {
         if (this.isKing) // if King piece : can king move?
             return ((KingPiece) this).canMove(board);
@@ -43,7 +44,6 @@ public class Piece {
         else // else Red piece : can red move?
             return ((RedPiece) this).canMove(board);
     }
-
 
     protected void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX, Board board) {
         rightPieceImage.setImageResource(R.drawable.possible_location_marker);
@@ -57,7 +57,7 @@ public class Piece {
                 int startY = rightMove.getStartY();
 
                 // updating boardArray
-                board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, isKing, currentTurn);
+                updateBoardArray(board, endX, endY);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
                 int jumpedPieceY = startY + 1;
                 if (isJump) {
@@ -108,9 +108,8 @@ public class Piece {
                 int startX = leftMove.getStartX();
                 int startY = leftMove.getStartY();
 
-
                 // updating boardArray
-                board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, isKing, currentTurn);
+                updateBoardArray(board, endX, endY);
                 board.getBoardArray()[startX][startY] = null; // remove old piece
                 int jumpedPieceY = startY - 1;
                 if (isJump) {
@@ -149,6 +148,13 @@ public class Piece {
             }
         });
     }
+
+    // This function is overridden by all the subclasses of Piece, because their board-update is different.
+    protected void updateBoardArray(Board board, int endX, int endY)
+    {
+        board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, isKing, currentTurn);
+    }
+
 
     protected void clearPossibleLocationMarkers(Board board) {
         for (int i = 0; i < Board.SIZE; i++) {

@@ -54,7 +54,7 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
                 highlightPiece(true, isKing, pieceImage);
                 if (!isKing) {
                     // move black
-                    this.piece = new BlackPiece(x, y, true, false, currentTurn);
+                    /*this.piece = new BlackPiece(x, y, currentTurn);*/
                     ((BlackPiece) this.piece).move(board);
                 } else {
                     this.piece = new KingPiece(x, y, true, currentTurn);
@@ -69,7 +69,7 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
                 currentTurn.setText(R.string.your_turn);
                 highlightPiece(false, isKing, pieceImage);
                 if (!isKing) {
-                    this.piece = new RedPiece(x, y, false, false, currentTurn);
+                    /*this.piece = new RedPiece(x, y, currentTurn);*/
                     ((RedPiece) this.piece).move(board);
                 } else {
                     this.piece = new KingPiece(x, y, false, currentTurn);

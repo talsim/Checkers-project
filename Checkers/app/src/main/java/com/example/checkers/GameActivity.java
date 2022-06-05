@@ -119,14 +119,14 @@ public class GameActivity extends AppCompatActivity {
                 // red pieces
                 if (x <= 2 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.red_piece);
-                    board.getBoardArray()[x][y] = new Piece(x, y, false, currentTurn);
+                    board.getBoardArray()[x][y] = new RedPiece(x, y, currentTurn);
                 }
 
 
                 // black pieces
                 if (x >= 5 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.black_piece);
-                    board.getBoardArray()[x][y] = new Piece(x, y, true, currentTurn);
+                    board.getBoardArray()[x][y] = new BlackPiece(x, y, currentTurn);
                 }
 
             }
