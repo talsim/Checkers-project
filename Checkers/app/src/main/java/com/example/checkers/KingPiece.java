@@ -19,6 +19,7 @@ public class KingPiece extends Piece {
         boolean rightJumpBlack = isRightJumpDiagonalAvailableBlack(board);
         boolean rightJumpRed = isRightJumpDiagonalAvailableRed(board);
 
+        // THERE NEEDS TO BE SEPARATION BETWEEN THE isBlack AND !isBlack (!!!)
 
         boolean rightBlack = isRightDiagonalAvailableBlack(board);
         boolean leftRed = isLeftDiagonalAvailableRed(board);
@@ -143,18 +144,6 @@ public class KingPiece extends Piece {
         return (Logic.canBlackMoveUp(x) && !Logic.isOnLeftEdge(y) && Logic.isTileAvailable(board, x - 1, y - 1) /* left tile */);
     }
 
-    private boolean isLeftJumpDiagonalAvailableRed(Board board) {
-        return (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && isCheckerBehindNeeds2BeRedOrBlack(true, x + 1, y - 1, board));
-    }
-
-    private boolean isRightJumpDiagonalAvailableBlack(Board board) {
-        return (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && isCheckerBehindNeeds2BeRedOrBlack(true, x - 1, y + 1, board));
-    }
-
-    private boolean isRightJumpDiagonalAvailableRed(Board board) {
-        return (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && isCheckerBehindNeeds2BeRedOrBlack(true, x + 1, y + 1, board));
-    }
-
     private boolean isRightDiagonalAvailableBlack(Board board) {
         return (Logic.canBlackMoveUp(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x - 1, y + 1) /* right tile */);
     }
@@ -167,31 +156,48 @@ public class KingPiece extends Piece {
         return (Logic.canRedMoveDown(x) && !Logic.isOnRightEdge(y) && Logic.isTileAvailable(board, x + 1, y + 1) /* right tile */);
     }
 
-    private boolean isLeftJumpDiagonalAvailableBlack(Board board) {
-        return (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && isCheckerBehindNeeds2BeRedOrBlack(true, x - 1, y - 1, board));
+    // ISBLACK
+
+    private boolean isBlackLeftJumpDiagonalAvailableForBlack(Board board) {
+        return (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && !board.getBoardArray()[x - 1][y - 1].isBlack() /* if the piece to be eaten is red color (because we are black in this condition) */);
     }
 
-    private boolean isLeftJumpDiagonalAvailableBlackOther(Board board) {
+    private boolean isBlackRightJumpDiagonalAvailableForBlack(Board board) {
+        return (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && !board.getBoardArray()[x - 1][y + 1].isBlack() /* if the piece to be eaten is red color (because we are black in this condition) */);
+    }
+
+    private boolean isRedLeftJumpDiagonalAvailableForBlack(Board board) {
+        return (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && !board.getBoardArray()[x + 1][y - 1].isBlack() /* if the piece to be eaten is red color (because we are black in this condition) */);
+    }
+
+    private boolean isRedRightJumpDiagonalAvailableForBlack(Board board) {
+        return (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && !board.getBoardArray()[x + 1][y + 1].isBlack() /* if the piece to be eaten is red color (because we are black in this condition) */);
+    }
+
+
+    // ! ISBLACK - *********CONTINUE HERE********
+
+    private boolean isBlackLeftJumpDiagonalAvailableForRed(Board board) {
         return (Logic.hasSpaceForLeftJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y - 2) && !Logic.isTileAvailable(board, x - 1, y - 1) && isCheckerBehindNeeds2BeRedOrBlack(false, x - 1, y - 1, board));
     }
 
-    private boolean isRightJumpDiagonalAvailableBlackOther(Board board) {
+    private boolean isBlackRightJumpDiagonalAvailableForRed(Board board) {
         return (Logic.hasSpaceForRightJump(x, y, true) && Logic.isTileAvailable(board, x - 2, y + 2) && !Logic.isTileAvailable(board, x - 1, y + 1) && isCheckerBehindNeeds2BeRedOrBlack(false, x - 1, y + 1, board));
     }
 
-    private boolean isLeftJumpDiagonalAvailableRedOther(Board board) {
+    private boolean isRedLeftJumpDiagonalAvailableForRed(Board board) {
         return (Logic.hasSpaceForLeftJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y - 2) && !Logic.isTileAvailable(board, x + 1, y - 1) && isCheckerBehindNeeds2BeRedOrBlack(false, x + 1, y - 1, board));
     }
 
-    private boolean isRightJumpDiagonalAvailableRedOther(Board board) {
+    private boolean isRedRightJumpDiagonalAvailableForRed(Board board) {
         return (Logic.hasSpaceForRightJump(x, y, false) && Logic.isTileAvailable(board, x + 2, y + 2) && !Logic.isTileAvailable(board, x + 1, y + 1) && isCheckerBehindNeeds2BeRedOrBlack(false, x + 1, y + 1, board));
     }
 
 
     // only in the eating-checks we do, we need to check differently for black or red
-    private boolean isCheckerBehindNeeds2BeRedOrBlack(boolean isBlack, int x, int y, Board board) {
-        if (isBlack)
-            return !board.getBoardArray()[x][y].isBlack(); // check if there is red piece behind me
-        return board.getBoardArray()[x][y].isBlack(); // else, check if there is black piece behind me
+    private boolean isCheckerBehindNeeds2BeRedOrBlack(boolean isPieceBlackColor, int x, int y, Board board) {
+        if (isPieceBlackColor)
+            return !board.getBoardArray()[x][y].isBlack(); // check if there is red piece in front of me
+        return board.getBoardArray()[x][y].isBlack(); // else, check if there is black piece in front of me
     }
 }

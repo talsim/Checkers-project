@@ -50,34 +50,30 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
         if (isHost()) // for the host (for black)
         {
             if (isBlack && isBlackTurn) {
-                currentTurn.setText(R.string.your_turn);
                 highlightPiece(true, isKing, pieceImage);
                 if (!isKing) {
                     // move black
-                    /*this.piece = new BlackPiece(x, y, currentTurn);*/
                     ((BlackPiece) this.piece).move(board);
                 } else {
                     this.piece = new KingPiece(x, y, true, currentTurn);
                     ((KingPiece) this.piece).move(board);
                 }
-            } else
-                currentTurn.setText(R.string.not_your_turn);
+            }
 
         } else // for the guest (for red)
         {
             if (!isBlack && !isBlackTurn) {
-                currentTurn.setText(R.string.your_turn);
+
                 highlightPiece(false, isKing, pieceImage);
                 if (!isKing) {
-                    /*this.piece = new RedPiece(x, y, currentTurn);*/
+
                     ((RedPiece) this.piece).move(board);
                 } else {
                     this.piece = new KingPiece(x, y, false, currentTurn);
                     ((KingPiece) this.piece).move(board);
                 }
             }
-            else
-                currentTurn.setText(R.string.not_your_turn);
+
         }
 
 //        ****play locally****

@@ -46,6 +46,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ public class LobbyActivity extends AppCompatActivity {
         fStore = FirebaseFirestore.getInstance();
         broadcastReceiver = new MyBroadcastReceiver(roomsList, listView, getApplicationContext());
         registerBroadcastListener();
+        removeFirestorePersistence();
 
         initNavHeader();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -148,6 +150,15 @@ public class LobbyActivity extends AppCompatActivity {
 //        super.onStart();
 //    }
 
+    public void removeFirestorePersistence()
+    {
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(false)
+                .build();
+        fStore.setFirestoreSettings(settings);
+    }
+
+
     // register broadcast listener
     public void registerBroadcastListener() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -208,17 +219,17 @@ public class LobbyActivity extends AppCompatActivity {
                 Log.d(TAG, "listenForRoomsUpdates");
                 if (snapshot != null && snapshot.exists()) {
 
-                    if (getIsInGame()) // if a guest joined
-                    {
-                        Log.d(TAG, "sending request to host");
-                        gameInvitationHandler();
-                    }
-
-//                    Boolean isInGame = (Boolean) snapshot.get("isInGame");
-//                    if (isInGame != null && isInGame) // if a guest joined
+//                    if (getIsInGame()) // if a guest joined
 //                    {
+//                        Log.d(TAG, "sending request to host");
 //                        gameInvitationHandler();
 //                    }
+
+                    Boolean isInGame = (Boolean) snapshot.get("isInGame");
+                    if (isInGame != null && isInGame) // if a guest joined
+                    {
+                        gameInvitationHandler();
+                    }
                 }
 //                else if (getIsInGame()) // if snapshot is SOMEHOW broken and we cannot read from it isInGame's value, get it manually.
 //                    gameInvitationHandler();
