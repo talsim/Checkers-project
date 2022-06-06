@@ -5,6 +5,7 @@ import static com.example.checkers.OnClickListenerForPieceMoves.lastUsedImageVie
 import android.widget.ImageView;
 import android.widget.TextView;
 
+// class that defines a red piece
 public class RedPiece extends Piece {
 
     public RedPiece(int x, int y, TextView currentTurn) {
@@ -33,7 +34,7 @@ public class RedPiece extends Piece {
             Move leftMove = new Move(x, y, x + 1, y - 1);
             ImageView leftPieceImage = GameActivity.imageViewsTiles[x + 1][y - 1];
             lastUsedImageViews[4] = leftPieceImage;
-            leftDiagonal(leftMove, leftPieceImage, false, false, false, 0, board);
+            leftDiagonal(leftMove, leftPieceImage, false, false, 0, board);
         }
 
         /* -------------------------- left-JUMP diagonal -------------------------- */
@@ -42,7 +43,7 @@ public class RedPiece extends Piece {
             ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y - 2];
             lastUsedImageViews[5] = leftJumpPieceImage;
             Move leftJumpMove = new Move(x, y, x + 2, y - 2);
-            leftDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1, board);
+            leftDiagonal(leftJumpMove, leftJumpPieceImage, false, true, x + 1, board);
         }
 
         /* -------------------------- right diagonal -------------------------- */
@@ -50,7 +51,7 @@ public class RedPiece extends Piece {
             Move rightMove = new Move(x, y, x + 1, y + 1);
             ImageView rightPieceImage = GameActivity.imageViewsTiles[x + 1][y + 1];
             lastUsedImageViews[6] = rightPieceImage;
-            rightDiagonal(rightMove, rightPieceImage, false, false, false, 0, board);
+            rightDiagonal(rightMove, rightPieceImage, false, false, 0, board);
         }
 
         /* -------------------------- right-JUMP diagonal -------------------------- */
@@ -58,7 +59,7 @@ public class RedPiece extends Piece {
             ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x + 2][y + 2];
             lastUsedImageViews[7] = leftJumpPieceImage;
             Move leftJumpMove = new Move(x, y, x + 2, y + 2);
-            rightDiagonal(leftJumpMove, leftJumpPieceImage, false, false, true, x + 1, board);
+            rightDiagonal(leftJumpMove, leftJumpPieceImage, false, true, x + 1, board);
         }
     }
 

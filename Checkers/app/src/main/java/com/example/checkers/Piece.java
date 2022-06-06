@@ -45,7 +45,7 @@ public class Piece {
             return ((RedPiece) this).canMove(board);
     }
 
-    protected void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX, Board board) {
+    protected void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isJump, int jumpedPieceX, Board board) {
         rightPieceImage.setImageResource(R.drawable.possible_location_marker);
         rightPieceImage.setClickable(true);
         rightPieceImage.setOnClickListener(new View.OnClickListener() {
@@ -97,7 +97,7 @@ public class Piece {
         });
     }
 
-    protected void leftDiagonal(Move leftMove, ImageView leftPieceImage, boolean isBlack, boolean isKing, boolean isJump, int jumpedPieceX, Board board) {
+    protected void leftDiagonal(Move leftMove, ImageView leftPieceImage, boolean isBlack, boolean isJump, int jumpedPieceX, Board board) {
         leftPieceImage.setImageResource(R.drawable.possible_location_marker);
         leftPieceImage.setClickable(true);
         leftPieceImage.setOnClickListener(new View.OnClickListener() {

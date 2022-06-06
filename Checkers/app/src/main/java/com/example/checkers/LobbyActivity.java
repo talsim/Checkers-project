@@ -57,6 +57,7 @@ import java.util.Objects;
 public class LobbyActivity extends AppCompatActivity {
     public static final String TAG = "WaitingRoom";
     public static final String ROOMSPATH = "rooms";
+    public static final int PhoneNumOfDeveloper = 99999999;
     public Toolbar toolbar;
     public DrawerLayout drawer;
     public TextView mUsername;
@@ -68,10 +69,11 @@ public class LobbyActivity extends AppCompatActivity {
     public ListenerRegistration hostUpdatesListener;
     public ListenerRegistration guestUpdatesListener;
     public static ListenerRegistration roomsUpdaterViewListener;
-    private FirebaseFirestore fStore;
     public ListView listView;
     public static String playerName;
     public static String roomName;
+
+    private FirebaseFirestore fStore;
 
     public DocumentReference hostUpdatesRef;
     public DocumentReference guestUpdatesRef;
@@ -111,47 +113,11 @@ public class LobbyActivity extends AppCompatActivity {
         updateListview(roomsList, listView, getApplicationContext());
     }
 
-
-//    @Override
-//    public void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_lobby);
-//
-//        listView = findViewById(R.id.listViewPlayers);
-//        fStore = FirebaseFirestore.getInstance();
-//        broadcastReceiver = new MyBroadcastReceiver(roomsList, listView, getApplicationContext());
-//        registerBroadcastListener();
-//
-//    }
-
-//    @Override
-//    protected void onStart() {
-//        initNavHeader();
-//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                // join an existing room and add yourself as guest
-//                String otherPlayerName = roomsList.get(position);
-//                if (!otherPlayerName.equals(playerName)) // if the player is not challenging himself
-//                {
-//                    roomName = otherPlayerName;
-//                    roomRef = fStore.collection(ROOMSPATH).document(roomName);
-//                    Map<String, Object> userData = new HashMap<>();
-//                    userData.put("guest", playerName);
-//                    userData.put("isInGame", true);
-//                    addDataToDatabase(userData, roomRef);
-//                    listenForRoomUpdates();
-//                } else // if the player IS challenging himself, just tell him he can't.
-//                    Toast.makeText(getApplicationContext(), "Challenge... yourself? :)", Toast.LENGTH_LONG).show();
-//            }
-//        });
-//
-//        updateListview(roomsList, listView, getApplicationContext());
-//        super.onStart();
-//    }
-
-    public void removeFirestorePersistence()
-    {
+    /**
+     * Remove the Firestore persistence, thus disabling getting data from cache. (because we need realtime updates during a game)
+     *
+     */
+    public void removeFirestorePersistence() {
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                 .setPersistenceEnabled(false)
                 .build();
@@ -161,6 +127,7 @@ public class LobbyActivity extends AppCompatActivity {
 
     // register broadcast listener
     public void registerBroadcastListener() {
+        // According to the
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             registerReceiver(broadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
@@ -177,7 +144,7 @@ public class LobbyActivity extends AppCompatActivity {
 
     // Contact button handler function
     public void contactHandler() {
-        Uri uri = Uri.parse("smsto:" + 99999999);
+        Uri uri = Uri.parse("smsto:" + PhoneNumOfDeveloper);
         Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
         intent.putExtra("sms_body", "Your feedback here");
         try {
@@ -218,28 +185,17 @@ public class LobbyActivity extends AppCompatActivity {
                 }
                 Log.d(TAG, "listenForRoomsUpdates");
                 if (snapshot != null && snapshot.exists()) {
-
-//                    if (getIsInGame()) // if a guest joined
-//                    {
-//                        Log.d(TAG, "sending request to host");
-//                        gameInvitationHandler();
-//                    }
-
                     Boolean isInGame = (Boolean) snapshot.get("isInGame");
                     if (isInGame != null && isInGame) // if a guest joined
                     {
                         gameInvitationHandler();
                     }
                 }
-//                else if (getIsInGame()) // if snapshot is SOMEHOW broken and we cannot read from it isInGame's value, get it manually.
-//                    gameInvitationHandler();
-
             }
         });
     }
 
     private void gameInvitationHandler() {
-        // *** check if this is the host's phone by comparing the roomName (which is the host's username) to playerName
         String hostUsername = roomName;
         Map<String, Object> gameRequestData = new HashMap<>();
         AlertDialog gameRequestDialog;
@@ -266,7 +222,7 @@ public class LobbyActivity extends AppCompatActivity {
 
                     addDataToDatabase(gameRequestData, hostUpdatesRef);
 
-                    // LET'S PLAYYYYYY!!!!!!!!!
+                    // LET'S PLAY!
                     startGame(vibrator);
                 }
             });
@@ -373,7 +329,7 @@ public class LobbyActivity extends AppCompatActivity {
                 if (snapshot != null && snapshot.exists()) {
                     Boolean startGame = (Boolean) snapshot.get("startGame");
                     if (startGame != null)
-                        if (startGame) { // host confirmed = LET'S FUCKING PLAYYYY!!!!
+                        if (startGame) { // host confirmed = LET'S PLAY!
                             gameRequestDialog.dismiss();
                             startGame(vibrator);
                         } else { // host declined
@@ -537,23 +493,6 @@ public class LobbyActivity extends AppCompatActivity {
 
         super.onStop();
     }
-
-//    @Override
-//    public void onResume() {
-//        // rejoin player to database because he came back online.
-//        Log.d(TAG, "ONRESUME: USER IS ONLINE AGAIN");
-//        connectUser();
-//
-//        super.onResume();
-//    }
-
-//    @Override
-//    protected void onPause() {
-//        if (roomListener != null)
-//            roomListener.remove();
-//
-//        super.onPause();
-//    }
 
     @Override
     public void onDestroy() { // this is not always called!!!

@@ -47,7 +47,11 @@ import java.util.Map;
 public class DBUtils {
     public static final String TAG = "DatabaseUtils";
 
-    // wrapper function for update and set functions in the Firebase API
+    /**
+     * wrapper function for update and set functions in the Firebase API.
+     * @param data      The data to be uploaded to the database - type of a Map
+     * @param docRef    The Document Reference to the location of the uploaded data.
+     */
     public static void addDataToDatabase(Map<String, Object> data, DocumentReference docRef) {
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -66,18 +70,27 @@ public class DBUtils {
         });
     }
 
-    // checks if local playerName is equal to host name (roomName)
+    /**
+     * Checks if local playerName is equal to the host name. This is done by comparing playerName and roomName.
+     * @return  True if the player is the host of the room.
+     */
     public static boolean isHost() {
         return playerName.equals(roomName);
     }
 
-    // returns true if playerName is the winner of the game, else otherwise.
+    /**
+     * Checks if the winner is the current player. This is done by comparing playerName and nameOfWinner.
+     * @param nameOfWinner  The name of the winner.
+     * @return              True if playerName is the winner of the game, else otherwise.
+     */
     public static boolean isWinner(String nameOfWinner) {
         return playerName.equals(nameOfWinner);
     }
 
-
-    // get from db
+    /**
+     * Gets the "guest" field in the database which is saved in the current room (pointed by roomRef). returns "*GUEST*" if it couldn't retrieve the field (almost never happens).
+     * @return  The field "guest", which is saved in the database in roomRef location (as a String).
+     */
     public static String getGuestUsername() {
         Task<DocumentSnapshot> getGuest = roomRef.get();
         while (!getGuest.isComplete()) {
@@ -92,14 +105,27 @@ public class DBUtils {
         return "*GUEST*"; // couldn't get the guest username
     }
 
-    // get blackTurn and upload it to db
+    /**
+     * Uploads the given blackTurn parameter to the location pointed by gameplayRef.
+     * @param blackTurn     The current turn to update in the database.
+     * @param gameplayRef   The Document Reference to the location where the field "isBlackTurn" is at.
+     */
     public static void updateBlackTurnInDb(boolean blackTurn, CollectionReference gameplayRef) {
         Map<String, Object> gameUpdates = new HashMap<>();
         gameUpdates.put("isBlackTurn", blackTurn);
         addDataToDatabase(gameUpdates, gameplayRef.document("gameUpdates"));
     }
 
-    // upload Piece locations by a format
+    /**
+     * Uploads the piece location based on the format:
+     *  Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump     |
+     *  Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False  |
+     * @param move      The Move object that represents the move that was made.
+     * @param isJump    A boolean indicating if a jump has occurred.
+     * @param jumpX     If there was a jump (based on isJump), this will contain the X cord of it.
+     * @param jumpY     If there was a jump (based on isJump), this will contain the Y cord of it.
+     * @param isKing    A boolean indicating whether this piece is a king piece or not.
+     */
     public static void uploadPieceLocationToDb(Move move, boolean isJump, int jumpX, int jumpY, boolean isKing) {
         DocumentReference documentReference;
         if (isHost())
@@ -118,7 +144,12 @@ public class DBUtils {
         addDataToDatabase(updates, documentReference);
     }
 
-    // update list view when player joins to server
+    /**
+     * Updates the list view when a player joins the server.
+     * @param roomsList     A reference to the roomsList object in Lobby activity.
+     * @param listView      A reference to the listView object in Lobby activity.
+     * @param appContext    The Application Context.
+     */
     public static void updateListview(ArrayList<String> roomsList, ListView listView, Context appContext) {
         CollectionReference roomsRef = FirebaseFirestore.getInstance().collection(ROOMSPATH);
         roomsUpdaterViewListener = roomsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {

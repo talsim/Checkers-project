@@ -25,33 +25,16 @@ import static com.example.checkers.LobbyActivity.roomRef;
 import java.util.HashMap;
 import java.util.Map;
 
-
-
-/*
- * RULES
- * >>>>>>>>>>>>>
- * 1.	Checkers can only move diagonally, on darkwood tiles.
- *
- * 2.	Normal checkers can only move forward diagonally (for black checkers,
- * 		this is down and for red checkers, this is up).
- *
- * 3.	A checker becomes a king when it reaches the opponents end and cannot
- * 		move forward anymore.
- *
- * 4.	Once a checker becomes a king, the player's turn is over.
- *
- * 5.	After a checker/king moves one space diagonally, the player's turn is
- * 		over.
- *
- * 6.	The game is over if a player either has no more checkers or cannot make
- * 		a move on their turn.
- *
- * 7.	The player with the black checkers moves first.
+/** This class is responsible to handle game events, such as piece moves, game ending and more.
+ * @author Tal Simhayev
+ * @version 1.0
  */
-
 public class GameActivity extends AppCompatActivity {
 
-    public static final ImageView[][] imageViewsTiles = new ImageView[Board.SIZE][Board.SIZE]; // all the squares which contain the actual pieces (reference from the xml)
+    /**
+     * all the squares which contain the actual pieces (reference from the xml).
+     */
+    public static final ImageView[][] imageViewsTiles = new ImageView[Board.SIZE][Board.SIZE];
     public static final String TAG = "GameActivity";
     public static ListenerRegistration guestMovesUpdatesListener;
     public static ListenerRegistration hostMovesUpdatesListener;
@@ -75,7 +58,7 @@ public class GameActivity extends AppCompatActivity {
         FirebaseFirestore fStore = FirebaseFirestore.getInstance();
         DocumentReference gameUpdatesRef = fStore.collection(LobbyActivity.ROOMSPATH).document(roomName).collection("gameplay").document("gameUpdates");
         Map<String, Object> data = new HashMap<>();
-        data.put("isBlackTurn", true); // - we can also randomize this init value to get the result of a random player to start the game (a possible feature)
+        data.put("isBlackTurn", true); // sets isBlackTurn to true, so that Black player starts first.
         addDataToDatabase(data, gameUpdatesRef);
 
         if (isHost()) {
@@ -84,9 +67,7 @@ public class GameActivity extends AppCompatActivity {
             // set a listener for red's moves (guest moves) and move the red pieces accordingly
             DocumentReference guestMovesUpdatesRef = roomRef.collection("gameplay").document("guestMovesUpdates");
             guestMovesUpdatesListener = listenDBForPieceMoves(guestMovesUpdatesRef, false);
-        }
-        else
-        {
+        } else {
             currentTurn.setText(R.string.not_your_turn);
 
             // set a listener for black's moves (host pieces) and move the black pieces accordingly
@@ -158,15 +139,7 @@ public class GameActivity extends AppCompatActivity {
                         move.perform(isPieceBlack, isKingDb);
 
                         // updating boardArray
-                        Piece addedPiece;
-                        if (isKingDb)
-                            addedPiece = new KingPiece(endX, endY, isPieceBlack, currentTurn);
-                        else if (isPieceBlack)
-                            addedPiece = new BlackPiece(endX, endY, currentTurn);
-                        else
-                            addedPiece = new RedPiece(endX, endY, currentTurn);
-
-                        board.getBoardArray()[endX][endY] = addedPiece;
+                        board.getBoardArray()[endX][endY] = createAddedPiece(isPieceBlack, isKingDb, endX, endY);
                         board.getBoardArray()[startX][startY] = null; // remove old piece
 
                         // marking the start position (for the user)
@@ -194,8 +167,7 @@ public class GameActivity extends AppCompatActivity {
         });
     }
 
-    private Piece getAddedPiece(boolean isPieceBlack, boolean isKingDb, int endX, int endY)
-    {
+    private Piece createAddedPiece(boolean isPieceBlack, boolean isKingDb, int endX, int endY) {
         Piece addedPiece;
         if (isKingDb)
             addedPiece = new KingPiece(endX, endY, isPieceBlack, currentTurn);

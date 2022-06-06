@@ -33,7 +33,7 @@ public class BlackPiece extends Piece {
             ImageView leftPieceImage = GameActivity.imageViewsTiles[x - 1][y - 1];
             lastUsedImageViews[0] = leftPieceImage;
             Move leftMove = new Move(x, y, x - 1, y - 1);
-            leftDiagonal(leftMove, leftPieceImage, true, false, false, 0, board);
+            leftDiagonal(leftMove, leftPieceImage, true, false, 0, board);
         }
 
         /* -------------------------- left-JUMP diagonal -------------------------- */
@@ -41,7 +41,7 @@ public class BlackPiece extends Piece {
             ImageView leftJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y - 2];
             lastUsedImageViews[1] = leftJumpPieceImage;
             Move leftJumpMove = new Move(x, y, x - 2, y - 2);
-            leftDiagonal(leftJumpMove, leftJumpPieceImage, true, false, true, x - 1, board);
+            leftDiagonal(leftJumpMove, leftJumpPieceImage, true, true, x - 1, board);
         }
 
         /* -------------------------- right diagonal -------------------------- */
@@ -49,7 +49,7 @@ public class BlackPiece extends Piece {
             Move rightMove = new Move(x, y, x - 1, y + 1);
             ImageView rightPieceImage = GameActivity.imageViewsTiles[x - 1][y + 1];
             lastUsedImageViews[2] = rightPieceImage;
-            rightDiagonal(rightMove, rightPieceImage, true, false, false, 0, board);
+            rightDiagonal(rightMove, rightPieceImage, true, false, 0, board);
         }
 
         /* -------------------------- right-JUMP diagonal -------------------------- */
@@ -57,7 +57,7 @@ public class BlackPiece extends Piece {
             ImageView rightJumpPieceImage = GameActivity.imageViewsTiles[x - 2][y + 2];
             lastUsedImageViews[3] = rightJumpPieceImage;
             Move rightJumpMove = new Move(x, y, x - 2, y + 2);
-            rightDiagonal(rightJumpMove, rightJumpPieceImage, true, false, true, x - 1, board);
+            rightDiagonal(rightJumpMove, rightJumpPieceImage, true, true, x - 1, board);
         }
     }
 

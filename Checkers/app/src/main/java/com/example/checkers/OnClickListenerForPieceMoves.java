@@ -75,29 +75,6 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
             }
 
         }
-
-//        ****play locally****
-//        if (isBlack) {
-//            highlightPiece(true, isKing, pieceImage);
-//            if (!isKing) {
-//                this.piece = new BlackPiece(x, y, true, false);
-//                ((BlackPiece) this.piece).move(board);
-//            } else {
-//                this.piece = new KingPiece(x, y, true);
-//                ((KingPiece) this.piece).move(board);
-//            }
-//        } else if (!isBlack) {
-//            highlightPiece(false, isKing, pieceImage);
-//            if (!isKing) {
-//
-//                this.piece = new RedPiece(x, y, false, false);
-//                ((RedPiece) this.piece).move(board);
-//
-//            } else {
-//                this.piece = new KingPiece(x, y, true);
-//                ((KingPiece) this.piece).move(board);
-//            }
-//        }
     }
 
 
