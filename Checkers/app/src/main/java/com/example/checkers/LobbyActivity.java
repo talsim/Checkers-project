@@ -1,7 +1,6 @@
 package com.example.checkers;
 
 import static com.example.checkers.DBUtils.addDataToDatabase;
-import static com.example.checkers.DBUtils.deleteAllDocumentsInCollection;
 import static com.example.checkers.DBUtils.isHost;
 import static com.example.checkers.DBUtils.getGuestUsername;
 import static com.example.checkers.DBUtils.updateListview;
@@ -114,8 +113,7 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
     /**
-     * Remove the Firestore persistence, thus disabling getting data from cache. (because we need realtime updates during a game)
-     *
+     * Remove the Firestore persistence, thus disabling getting data from cache (because we need realtime updates during a game).
      */
     public void removeFirestorePersistence() {
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
@@ -125,7 +123,9 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
 
-    // register broadcast listener
+    /**
+     * Registers the broadcast listener.
+     */
     public void registerBroadcastListener() {
         // According to the
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -135,14 +135,19 @@ public class LobbyActivity extends AppCompatActivity {
             registerReceiver(broadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
-    // unregister broadcast listener
+    /**
+     * Unregisters the broadcast listener.
+     */
     public void unregisterBroadcastListener() {
         if (broadcastReceiver != null)
             unregisterReceiver(broadcastReceiver);
     }
 
 
-    // Contact button handler function
+    /**
+     * Contact button handler function. Creates an Intent object with an ACTION_SENDTO (SMS app), to the developer's phone.
+     * The user can send feedback to the developer and report issues and possible add-ons.
+     */
     public void contactHandler() {
         Uri uri = Uri.parse("smsto:" + PhoneNumOfDeveloper);
         Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
@@ -154,6 +159,11 @@ public class LobbyActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Gets the "isInGame" field in the room document, which can be accessed by using roomName.
+     *
+     * @return "isInGame" field value (Boolean) in the current room path. Throws an IllegalStateException if couldn't retrieve the field.
+     */
     // get isInGame value from db
     private boolean getIsInGame() {
         Task<DocumentSnapshot> getInGame = fStore.collection(ROOMSPATH).document(roomName).get();
@@ -166,15 +176,15 @@ public class LobbyActivity extends AppCompatActivity {
             Boolean val = (Boolean) isInGameVal.get("isInGame");
             if (val != null)
                 return val;
-        } else
-            Log.d(TAG, "Error getting document: ", getInGame.getException());
-
-        return false;
-
+        }
+        Log.d(TAG, "Error getting document: ", getInGame.getException());
+        throw new IllegalStateException("couldn't get isBlackTurn from db");
     }
 
-
-    // when a room gets updated, check what got updated/added and react accordingly
+    /**
+     * This function is called when a room gets updated, and checks if isInGame value on the database has changed (means a guest joined the room).
+     * if it has then it redirects execution to gameInvitationHandler(), else does nothing.
+     */
     public void listenForRoomUpdates() {
         roomListener = roomRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -195,10 +205,12 @@ public class LobbyActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles a game invite (when a guest joins someone's room) by calling the handleHostInGameInvitation() and handleGuestInGameInvitation().
+     */
     private void gameInvitationHandler() {
         String hostUsername = roomName;
         Map<String, Object> gameRequestData = new HashMap<>();
-        AlertDialog gameRequestDialog;
         AlertDialog.Builder gameRequestDialogBuilder = new AlertDialog.Builder(LobbyActivity.this, AlertDialog.THEME_HOLO_LIGHT);
         gameRequestDialogBuilder.setCancelable(false);
 
@@ -206,86 +218,102 @@ public class LobbyActivity extends AppCompatActivity {
         hostUpdatesRef = roomRef.collection("hostUpdates").document("gameStatus");
         guestUpdatesRef = roomRef.collection("guestUpdates").document("gameStatus");
 
-
         if (isHost()) // for the host
-        {
-            String guestUsername = getGuestUsername();
+            handleHostInGameInvitation(gameRequestDialogBuilder, gameRequestData, vibrator);
 
-            gameRequestDialogBuilder.setMessage(guestUsername + " has challenged you to a game!");
-            gameRequestDialogBuilder.setTitle("You've Been Challenged");
-            gameRequestDialogBuilder.setPositiveButton("ACCEPT", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.d(TAG, "START GAME FOR HOST AND GUEST!");
+        else // for the guest
+            handleGuestInGameInvitation(gameRequestDialogBuilder, hostUsername, vibrator);
+    }
 
-                    gameRequestData.put("startGame", true);
+    /**
+     * Handle guest side when a game invite occurs, by showing the invite dialog and start listening to host response.
+     * @param gameRequestDialogBuilder      The AlertDialog builder to build the "Challenging" dialog in the guest's phone.
+     * @param hostUsername                  The host username value (of type String)
+     * @param vibrator                      The vibrator object to pass to startGame(), if the host accepts the invite.
+     */
+    public void handleGuestInGameInvitation(AlertDialog.Builder gameRequestDialogBuilder, String hostUsername, Vibrator vibrator) {
+        gameRequestDialogBuilder.setMessage("Challenging " + hostUsername + "...");
+        gameRequestDialogBuilder.setTitle("Challenge Sent");
+        gameRequestDialogBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d(TAG, "GUEST CANCELED: SEND 'CANCELED' MESSAGE TO HOST");
 
-                    addDataToDatabase(gameRequestData, hostUpdatesRef);
+                Map<String, Object> cancelRequestData = new HashMap<>();
+                cancelRequestData.put("canceled", true);
+                addDataToDatabase(cancelRequestData, guestUpdatesRef);
 
-                    // LET'S PLAY!
-                    startGame(vibrator);
-                }
-            });
-            gameRequestDialogBuilder.setNegativeButton("DECLINE", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.d(TAG, "HOST DECLINED: SEND 'DECLINED' MESSAGE TO GUEST");
+                // remove room listener for guest
+                roomListener.remove();
 
-                    gameRequestData.put("startGame", false);
-                    addDataToDatabase(gameRequestData, hostUpdatesRef);
+                // change roomName back to guest's name because he canceled
+                roomName = playerName;
+                roomRef = fStore.collection(ROOMSPATH).document(roomName);
 
-                    // remove guest now because host doesn't want to play with him
-                    Map<String, Object> updates = new HashMap<>();
-                    updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
-                    updates.put("isInGame", false); // update isInGame to false
-                    addDataToDatabase(updates, roomRef);
+                // remove the guest from the room because he canceled - this is managed in setListenerForGuestUpdates()
 
+            }
+        });
 
-                }
-            });
-
-            gameRequestDialog = gameRequestDialogBuilder.create();
-
-            // listen for guest updates (e.g maybe he canceled the request)
-            setListenerForGuestUpdates(guestUsername, gameRequestDialog, guestUpdatesRef);
-
-
-        } else // for the guest
-        {
-            gameRequestDialogBuilder.setMessage("Challenging " + hostUsername + "...");
-            gameRequestDialogBuilder.setTitle("Challenge Sent");
-            gameRequestDialogBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.d(TAG, "GUEST CANCELED: SEND 'CANCELED' MESSAGE TO HOST");
-
-                    Map<String, Object> cancelRequestData = new HashMap<>();
-                    cancelRequestData.put("canceled", true);
-                    addDataToDatabase(cancelRequestData, guestUpdatesRef);
-
-                    // remove room listener for guest
-                    roomListener.remove();
-
-                    // change roomName back to guest's name because he canceled
-                    roomName = playerName;
-                    roomRef = fStore.collection(ROOMSPATH).document(roomName);
-
-                    // remove the guest from the room because he canceled - this is managed in setListenerForGuestUpdates()
-
-                }
-            });
-
-            gameRequestDialog = gameRequestDialogBuilder.create();
-
-
-            // listen for host response
-            setListenerForHostUpdates(hostUsername, gameRequestDialog, hostUpdatesRef, vibrator);
-        }
-
+        AlertDialog gameRequestDialog = gameRequestDialogBuilder.create();
 
         gameRequestDialog.show();
 
+        // listen for host response
+        setListenerForHostUpdates(hostUsername, gameRequestDialog, hostUpdatesRef, vibrator);
     }
+
+    /**
+     * Handle host side when a game invite occurs, by showing the invite dialog and start listening for guest cancellation.
+     * @param gameRequestDialogBuilder      The AlertDialog builder to build the "Challenging" dialog in the host's phone.
+     * @param gameRequestData               The host username value (of type String)
+     * @param vibrator                      The vibrator object to pass to startGame(), if the host accepts the invite.
+     */
+    public void handleHostInGameInvitation(AlertDialog.Builder gameRequestDialogBuilder, Map<String, Object> gameRequestData, Vibrator vibrator) {
+        String guestUsername = getGuestUsername();
+
+        gameRequestDialogBuilder.setMessage(guestUsername + " has challenged you to a game!");
+        gameRequestDialogBuilder.setTitle("You've Been Challenged");
+        gameRequestDialogBuilder.setPositiveButton("ACCEPT", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d(TAG, "START GAME FOR HOST AND GUEST!");
+
+                gameRequestData.put("startGame", true);
+
+                addDataToDatabase(gameRequestData, hostUpdatesRef);
+
+                // LET'S PLAY!
+                startGame(vibrator);
+            }
+        });
+        gameRequestDialogBuilder.setNegativeButton("DECLINE", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d(TAG, "HOST DECLINED: SEND 'DECLINED' MESSAGE TO GUEST");
+
+                gameRequestData.put("startGame", false);
+                addDataToDatabase(gameRequestData, hostUpdatesRef);
+
+                // remove guest now because host doesn't want to play with him
+                Map<String, Object> updates = new HashMap<>();
+                updates.put("guest", FieldValue.delete()); // mark "guest" field as deletable on the database (remove it)
+                updates.put("isInGame", false); // update isInGame to false
+                addDataToDatabase(updates, roomRef);
+
+
+            }
+        });
+
+        AlertDialog gameRequestDialog = gameRequestDialogBuilder.create();
+
+        gameRequestDialog.show();
+
+        // listen for guest updates (e.g maybe he canceled the request)
+        setListenerForGuestUpdates(guestUsername, gameRequestDialog, guestUpdatesRef);
+
+    }
+
 
     // host will call this function to listen for guest updates e.g if he cancelled his invitation.
     private void setListenerForGuestUpdates(String guestUsername, AlertDialog gameRequestDialog, DocumentReference guestUpdatesRef) {

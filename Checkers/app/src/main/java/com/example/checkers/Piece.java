@@ -1,7 +1,7 @@
 package com.example.checkers;
 
 
-import static com.example.checkers.DBUtils.isGameOver;
+import static com.example.checkers.DBUtils.checkGameOver;
 import static com.example.checkers.DBUtils.updateBlackTurnInDb;
 import static com.example.checkers.DBUtils.uploadPieceLocationToDb;
 import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
@@ -92,7 +92,7 @@ public class Piece {
                 // upload new piece location to db
                 uploadPieceLocationToDb(rightMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());
 
-                isGameOver(board, !isBlack);
+                checkGameOver(board, !isBlack);
             }
         });
     }
@@ -144,7 +144,7 @@ public class Piece {
                 // upload new piece location to db
                 uploadPieceLocationToDb(leftMove, isJump, jumpedPieceX, jumpedPieceY, board.getBoardArray()[endX][endY].isKing());
 
-                isGameOver(board, !isBlack);
+                checkGameOver(board, !isBlack);
             }
         });
     }

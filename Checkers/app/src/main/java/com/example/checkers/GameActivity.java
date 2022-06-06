@@ -16,9 +16,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import static com.example.checkers.DBUtils.addDataToDatabase;
-import static com.example.checkers.DBUtils.isGameOver;
+import static com.example.checkers.DBUtils.checkGameOver;
 import static com.example.checkers.DBUtils.isHost;
-import static com.example.checkers.LobbyActivity.playerName;
 import static com.example.checkers.LobbyActivity.roomName;
 import static com.example.checkers.LobbyActivity.roomRef;
 
@@ -160,7 +159,7 @@ public class GameActivity extends AppCompatActivity {
                             }
                         }
                         currentTurn.setText(R.string.your_turn);
-                        isGameOver(board, !isPieceBlack);
+                        checkGameOver(board, !isPieceBlack);
                     }
                 }
             }

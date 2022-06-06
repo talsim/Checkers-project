@@ -172,7 +172,11 @@ public class DBUtils {
         });
     }
 
-    // delete all documents in a given collectionReference
+    /**
+     * Deletes all documents in a given collection location.
+     * This is done by looping through the entire collection and removing each document by getting its reference.
+     * @param collectionReference  The Reference to the collection to be deleted.
+     */
     public static void deleteAllDocumentsInCollection(CollectionReference collectionReference) {
         collectionReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -191,7 +195,13 @@ public class DBUtils {
         });
     }
 
-    public static void isGameOver(Board board, boolean isBlackTurn) {
+    /**
+     * Checks if the game is over by one of the following conditions:
+     * if a player either has no more checkers or cannot make a move on their turn.
+     * @param board         The Board object that contains the current state of the game.
+     * @param isBlackTurn   A boolean indicating the current turn.
+     */
+    public static void checkGameOver(Board board, boolean isBlackTurn) {
         int redPieces = 0;
         int blackPieces = 0;
         boolean canBlackMove = false;
@@ -214,9 +224,6 @@ public class DBUtils {
 
                 }
             }
-
-        Log.d(TAG, "CAN RED MOVE: " + canRedMove);
-        Log.d(TAG, "CAN BLACK MOVE: " + canBlackMove);
         // black won
         if (redPieces == 0 || (!canRedMove && !isBlackTurn)) {
             // show locally on black's phone that he won
@@ -231,9 +238,19 @@ public class DBUtils {
 
     }
 
-    public static void gameOver(boolean isBlack) {
+    /**
+     * Handles the game over event by showing a dialog of the winner and a "Return to the lobby" button, as well as removing the game room.
+     * The removal of the room is done by the following steps:
+     * 1) The winner starts to listen for "finish" field in gameUpdates (Boolean variable).
+     * 2) The loser does all his clean-ups (such as setting the roomRef variable and changing roomName), and then uploads "finish" to gameUpdates location.
+     * 3) The winner gets the "finish" message from the loser and then removes the room completely (by calling deleteAllDocumentsInCollection())
+     *
+     * @param didBlackWin  A boolean indicating the winner of the game.
+     */
+    public static void gameOver(boolean didBlackWin) {
 
         boolean host = isHost();
+        // backup of the roomName. useful when a guest wins and does his cleanup, which includes resetting roomName to his playerName, thus losing the actual room name.
         String roomNameBak = roomName;
         String winner;
         DocumentReference gameUpdates = FirebaseFirestore.getInstance().collection(LobbyActivity.ROOMSPATH).document(roomName).collection("gameplay").document("gameUpdates");
@@ -249,11 +266,7 @@ public class DBUtils {
             }
         });
 
-        // the winner starts to listen for "finish" in gameUpdates.
-        // the loser finishes everything he needs, and then uploads "finish" to gameUpdates location.
-        // the winner gets the "finish" from the loser and then removes the room completely.
-
-        if (isBlack) {
+        if (didBlackWin) {
             // show popup that the host won (roomName = hostname)
             String hostUsername = roomName;
             winner = hostUsername; // winner is host
@@ -275,19 +288,7 @@ public class DBUtils {
 
         if (isWinner(winner)) {
             // start listening for "finish" message from the loser.
-            gameOverListener = gameUpdates.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
-                    if (error != null) {
-                        Log.w(TAG, "Listen failed.", error);
-                        return;
-                    }
-                    if (snapshot != null && snapshot.exists()) {
-                        removeRoom(roomNameBak, snapshot);
-                    }
-                }
-            });
-
+            listenForFinishMessage(gameUpdates, roomNameBak);
         }
 
 
@@ -317,7 +318,32 @@ public class DBUtils {
             guestMovesUpdatesListener.remove();
     }
 
+    /**
+     * Listens for "finish" field in gameUpdates location, and removes the room when receives it.
+     * @param gameUpdates   The Document Reference to the gameUpdates location in the database.
+     * @param roomNameBak   The backup String of the original roomName variable (useful when the guest is the winner).
+     */
+    private static void listenForFinishMessage(DocumentReference gameUpdates, String roomNameBak) {
 
+        gameOverListener = gameUpdates.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w(TAG, "Listen failed.", error);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    removeRoom(roomNameBak, snapshot);
+                }
+            }
+        });
+    }
+
+    /**
+     * Removes the room completely if snapshot contains the "finish" field.
+     * @param roomNameBak   The backup String of the original roomName variable (useful when the guest is the winner).
+     * @param snapshot      The DocumentSnapshot object that might contain the "finish" message, which we got in the onEvent in listenForFinishMessage().
+     */
     private static void removeRoom(String roomNameBak, DocumentSnapshot snapshot) {
         Boolean isFinish = (Boolean) snapshot.get("finish");
         if (isFinish != null) // loser is finished, remove the room.
@@ -332,7 +358,10 @@ public class DBUtils {
         }
     }
 
-
+    /**
+     * Gets the "isBlackTurn" field in the gameUpdates location pointed by gameplayRef.
+     * @return  The value of isBlackTurn in the database (a Boolean variable)
+     */
     public static boolean getIsBlackTurn() {
         Task<DocumentSnapshot> getTurn = gameplayRef.document("gameUpdates").get();
         while (!getTurn.isComplete()) {
