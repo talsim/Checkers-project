@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class contains helper functions for a database API.
+ * This class handles the RegisterActivity operations.
  *
  * @author Tal Simhayev
  * @version 1.0

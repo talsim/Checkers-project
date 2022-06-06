@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 
 /**
- * This class contains helper functions for a database API.
+ * This class handles the SettingsActivity operations.
  *
  * @author Tal Simhayev
  * @version 1.0

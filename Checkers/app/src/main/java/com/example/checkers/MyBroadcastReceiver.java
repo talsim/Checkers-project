@@ -12,6 +12,12 @@ import static com.example.checkers.LobbyActivity.roomsUpdaterViewListener;
 
 import java.util.ArrayList;
 
+/**
+ * This class handles network changes on the user's phone.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class MyBroadcastReceiver extends android.content.BroadcastReceiver {
 
     private final ArrayList<String> roomsList;
