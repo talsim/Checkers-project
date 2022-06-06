@@ -24,7 +24,9 @@ import static com.example.checkers.LobbyActivity.roomRef;
 import java.util.HashMap;
 import java.util.Map;
 
-/** This class is responsible to handle game events, such as piece moves, game ending and more.
+/**
+ * This class is responsible to handle game events, such as piece moves, game ending and more.
+ *
  * @author Tal Simhayev
  * @version 1.0
  */
@@ -79,7 +81,9 @@ public class GameActivity extends AppCompatActivity {
 
     }
 
-    // set onClick listeners on all pieces
+    /**
+     * Set onClick listeners for all pieces with OnClickListenerForPieceMoves.
+     */
     public void setOnClickForPieces() {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
@@ -92,7 +96,9 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    // Responsible for drawing the pieces on the board
+    /**
+     * Responsible for initializing and drawing the pieces on the board
+     */
     public void initBoardAndDrawPieces() {
         for (int x = 0; x < Board.SIZE; x++) {
             for (int y = 0; y < Board.SIZE; y++) {
@@ -113,6 +119,11 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * @param playerMovesUpdatesRef The DocumentReference to the player moves updates location, e.g guestMovesUpdatesRef and hostMovesUpdatesRef
+     * @param isPieceBlack          A boolean indicating if the current piece is black or not.
+     * @return the ListenerRegistration object to be removed in the onStop() callback.
+     */
     // listen to playerMovesUpdatesRef in the host and in the guest
     private ListenerRegistration listenDBForPieceMoves(DocumentReference playerMovesUpdatesRef, boolean isPieceBlack) {
 
@@ -166,6 +177,13 @@ public class GameActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * @param isPieceBlack A boolean indicating if the current piece is black or not.
+     * @param isKingDb     A boolean field from the database indicating if the piece is king or not.
+     * @param endX         An integer that holds the end X cord of the move.
+     * @param endY         An integer that holds the end Y cord of the move.
+     * @return The newly created piece to be added to the boardArray hold in the Board object.
+     */
     private Piece createAddedPiece(boolean isPieceBlack, boolean isKingDb, int endX, int endY) {
         Piece addedPiece;
         if (isKingDb)
@@ -177,7 +195,9 @@ public class GameActivity extends AppCompatActivity {
         return addedPiece;
     }
 
-
+    /**
+     * Init every imageview from the xml, to move the pieces around the bard.
+     */
     private void initImageViews() {
 
         imageViewsTiles[0][1] = findViewById(R.id.circle01);
@@ -219,6 +239,9 @@ public class GameActivity extends AppCompatActivity {
         // back button is not allowed here.
     }
 
+    /**
+     * When the activity is in the "STOP" state (onStop() is called), do clean-ups by removing the gameOverListener, as well as host and guest moves listener.
+     */
     @Override
     protected void onStop() {
         if (gameOverListener != null)

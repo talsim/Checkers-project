@@ -9,11 +9,22 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 
+/**
+ * This class manages the MainActivity in the application.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class MainActivity extends AppCompatActivity {
 
     protected Button login;
     protected Button settings;
 
+    /**
+     * Handle the login and settings button presses, and redirect to the corresponding activity.
+     *
+     * @param savedInstanceState The saved instance bundle from the last run (if is not null) which is passed to the super.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

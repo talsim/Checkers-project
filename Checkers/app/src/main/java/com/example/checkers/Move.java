@@ -1,6 +1,11 @@
 package com.example.checkers;
 
-// class that defines a simple move on the board
+/**
+ * This class defines a simple move on the board.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class Move {
     private int startX, startY, endX, endY;
 
@@ -12,7 +17,12 @@ public class Move {
         this.endY = endY;
     }
 
-    // replace imageviews and do the transformation
+    /**
+     * Replace the ImageViews and do the transformation between the pieces - remove the old piece from the screen and add the new piece.
+     *
+     * @param isBlack The color the moved piece.
+     * @param isKing  A boolean indicating if the piece is a KingPiece or not.
+     */
     public void perform(boolean isBlack, boolean isKing) {
         GameActivity.imageViewsTiles[this.startX][this.startY].setImageResource(android.R.color.transparent);
         GameActivity.imageViewsTiles[this.startX][this.startY].setClickable(false);

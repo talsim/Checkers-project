@@ -1,8 +1,5 @@
 package com.example.checkers;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,14 +10,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
+/**
+ * This class manages the LoginActivity in the application.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class LoginActivity extends AppCompatActivity {
 
     public Button login;
@@ -60,7 +63,10 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    // handle login button
+    /**
+     * Handle the login button press, and check in the database if the given input is valid.
+     * If the input is valid then log in, else show error on text boxes.
+     */
     public void loginHandler() {
         String email = mEmail.getText().toString().trim(); // remove spaces
         String password = mPassword.getText().toString().trim();
@@ -95,10 +101,13 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    /*
-        Check if user input in different fields such as email and password are valid or not.
-        Returns: true if user input is OK, else otherwise.
-    */
+    /**
+     * Check if user input in different fields such as email and password are valid or not (e.g password length must be atleast 6 characters).
+     *
+     * @param email    The string representation of the email entered.
+     * @param password The string representation of the password entered.
+     * @return true if user input is OK, else otherwise.
+     */
     private boolean validateFields(String email, String password) {
         boolean isValid = true;
 

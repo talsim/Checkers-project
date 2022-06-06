@@ -1,17 +1,20 @@
 package com.example.checkers;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.SwitchCompat;
-
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.CompoundButton;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
+/**
+ * This class contains helper functions for a database API.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class SettingsActivity extends AppCompatActivity {
 
     public static final String SETTINGS_PREFS = "settings";
@@ -41,7 +44,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
-    // return to the caller activity (just finish)
+    /**
+     * This function returns to the caller activity, and finishes this activity.
+     *
+     * @param item The item in the menu (when pressing the back button).
+     * @return true if returning to MainActivity, else the super function's value.
+     */
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             this.finish();

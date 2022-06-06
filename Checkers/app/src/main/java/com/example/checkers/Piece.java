@@ -11,6 +11,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+/**
+ * This class defines a piece in the game.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class Piece {
 
     protected int x;
@@ -35,7 +41,12 @@ public class Piece {
         this.currentTurn = currentTurn;
     }
 
-
+    /**
+     * Check if the piece can be moved or not.
+     *
+     * @param board The Board object that holds the current state of the game.
+     * @return true if the piece can move, false otherwise.
+     */
     public boolean canMove(Board board) {
         if (this.isKing) // if King piece : can king move?
             return ((KingPiece) this).canMove(board);
@@ -45,6 +56,16 @@ public class Piece {
             return ((RedPiece) this).canMove(board);
     }
 
+    /**
+     * Show a right diagonal move, and do it if the user wishes to.
+     *
+     * @param rightMove       A Move object representing the move to be made.
+     * @param rightPieceImage The ImageView of the right piece.
+     * @param isBlack         The color of the piece.
+     * @param isJump          A boolean indicating if there is a jump.
+     * @param jumpedPieceX    If there is a jump, this will hold the x cord of it.
+     * @param board           The Board object that holds the current state of the game.
+     */
     protected void rightDiagonal(Move rightMove, ImageView rightPieceImage, boolean isBlack, boolean isJump, int jumpedPieceX, Board board) {
         rightPieceImage.setImageResource(R.drawable.possible_location_marker);
         rightPieceImage.setClickable(true);
@@ -97,6 +118,16 @@ public class Piece {
         });
     }
 
+    /**
+     * Show a left diagonal move, and do it if the user wishes to.
+     *
+     * @param leftMove       A Move object representing the move to be made.
+     * @param leftPieceImage The ImageView of the right piece.
+     * @param isBlack        The color of the piece.
+     * @param isJump         A boolean indicating if there is a jump.
+     * @param jumpedPieceX   If there is a jump, this will hold the x cord of it.
+     * @param board          The Board object that holds the current state of the game.
+     */
     protected void leftDiagonal(Move leftMove, ImageView leftPieceImage, boolean isBlack, boolean isJump, int jumpedPieceX, Board board) {
         leftPieceImage.setImageResource(R.drawable.possible_location_marker);
         leftPieceImage.setClickable(true);
@@ -149,13 +180,24 @@ public class Piece {
         });
     }
 
-    // This function is overridden by all the subclasses of Piece, because their board-update is different.
-    protected void updateBoardArray(Board board, int endX, int endY)
-    {
+    /**
+     * Update the board with the new piece.
+     * This function is overridden by all the subclasses of Piece, because their board-update when a piece moves is different.
+     *
+     * @param board The Board object that holds the current state of the game.
+     * @param endX  The end x cord of the move.
+     * @param endY  The end y cord of the move.
+     */
+    protected void updateBoardArray(Board board, int endX, int endY) {
         board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, currentTurn);
     }
 
 
+    /**
+     * Clear possible location markers ImageViews on the board (it appears when a player clicks on a piece) when a player clicked a different piece.
+     *
+     * @param board The Board object that holds the current state of the game.
+     */
     protected void clearPossibleLocationMarkers(Board board) {
         for (int i = 0; i < Board.SIZE; i++) {
             for (int j = 0; j < Board.SIZE; j++) {
@@ -189,7 +231,11 @@ public class Piece {
         }
     }
 
-    // responsible for removing the setOnClickListeners that we set and the player did not choose to go, so there will not be hanging listeners.
+    /**
+     * Responsible for removing the setOnClickListeners that we set and the player did not choose to go, so there will not be hanging listeners.
+     *
+     * @param board The Board object that holds the current state of the game.
+     */
     protected void unsetOnClickLastImageViews(Board board) {
         // how to make sure that at the place of the image there isn't also a checkers piece:
         // 1. get id of image; extract X and Y axis from it

@@ -53,6 +53,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * This class handles the interaction in the Lobby activity, such as sending a game invite.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class LobbyActivity extends AppCompatActivity {
     public static final String TAG = "WaitingRoom";
     public static final String ROOMSPATH = "rooms";
@@ -227,9 +233,10 @@ public class LobbyActivity extends AppCompatActivity {
 
     /**
      * Handle guest side when a game invite occurs, by showing the invite dialog and start listening to host response.
-     * @param gameRequestDialogBuilder      The AlertDialog builder to build the "Challenging" dialog in the guest's phone.
-     * @param hostUsername                  The host username value (of type String)
-     * @param vibrator                      The vibrator object to pass to startGame(), if the host accepts the invite.
+     *
+     * @param gameRequestDialogBuilder The AlertDialog builder to build the "Challenging" dialog in the guest's phone.
+     * @param hostUsername             The host username value (of type String)
+     * @param vibrator                 The vibrator object to pass to startGame(), if the host accepts the invite.
      */
     public void handleGuestInGameInvitation(AlertDialog.Builder gameRequestDialogBuilder, String hostUsername, Vibrator vibrator) {
         gameRequestDialogBuilder.setMessage("Challenging " + hostUsername + "...");
@@ -265,9 +272,10 @@ public class LobbyActivity extends AppCompatActivity {
 
     /**
      * Handle host side when a game invite occurs, by showing the invite dialog and start listening for guest cancellation.
-     * @param gameRequestDialogBuilder      The AlertDialog builder to build the "Challenging" dialog in the host's phone.
-     * @param gameRequestData               The host username value (of type String)
-     * @param vibrator                      The vibrator object to pass to startGame(), if the host accepts the invite.
+     *
+     * @param gameRequestDialogBuilder The AlertDialog builder to build the "Challenging" dialog in the host's phone.
+     * @param gameRequestData          The host username value (of type String)
+     * @param vibrator                 The vibrator object to pass to startGame(), if the host accepts the invite.
      */
     public void handleHostInGameInvitation(AlertDialog.Builder gameRequestDialogBuilder, Map<String, Object> gameRequestData, Vibrator vibrator) {
         String guestUsername = getGuestUsername();
@@ -315,7 +323,13 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
 
-    // host will call this function to listen for guest updates e.g if he cancelled his invitation.
+    /**
+     * Host will call this function to listen for guest updates e.g if guest cancelled their invitation.
+     *
+     * @param guestUsername     The guest's username (String)
+     * @param gameRequestDialog The AlertDialog object of the game request. used when host declines the request and then the dialog is dismissed.
+     * @param guestUpdatesRef   The DocumentReference of the location to the guest updates.
+     */
     private void setListenerForGuestUpdates(String guestUsername, AlertDialog gameRequestDialog, DocumentReference guestUpdatesRef) {
         guestUpdatesListener = guestUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -345,7 +359,14 @@ public class LobbyActivity extends AppCompatActivity {
         });
     }
 
-    // guest will call this function to listen for host updates when inviting him to a game
+    /**
+     * Guest will call this function to listen for host updates when inviting him to a game. The guest will start a game if the host accepts the invite.
+     *
+     * @param hostUsername      The host username (a String).
+     * @param gameRequestDialog The AlertDialog object of the game request. used when host accepts the request and then the dialog is dismissed and a game is started.
+     * @param hostUpdatesRef    The DocumentReference to the hostUpdates location in the database.
+     * @param vibrator          The vibrator object, used when a game starts (if it is enabled in the Settings).
+     */
     private void setListenerForHostUpdates(String hostUsername, AlertDialog gameRequestDialog, DocumentReference hostUpdatesRef, Vibrator vibrator) {
         hostUpdatesListener = hostUpdatesRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -379,18 +400,22 @@ public class LobbyActivity extends AppCompatActivity {
         });
     }
 
-    // start the game (with or without vibration)
-    private void startGame(Vibrator v) {
+    /**
+     * Start the game. this will be also a vibration if the user didn't disable the option in the settings.
+     *
+     * @param vibrator The vibrator object, used when a game is started.
+     */
+    private void startGame(Vibrator vibrator) {
         SharedPreferences settingsPrefs = getSharedPreferences(SETTINGS_PREFS, MODE_PRIVATE);
         boolean isVibrate = settingsPrefs.getBoolean("vibrate", true);
 
         if (isVibrate) {
             // Vibrate for 500 milliseconds
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
             } else {
                 //deprecated in API 26
-                v.vibrate(500);
+                vibrator.vibrate(500);
             }
         }
 
@@ -405,7 +430,9 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
 
-    // init menu and connect user
+    /**
+     * init the menu and connect the user to the database when finished.
+     */
     public void initNavHeader() {
         toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
@@ -473,7 +500,9 @@ public class LobbyActivity extends AppCompatActivity {
         mEmail.setText(Objects.requireNonNull(fAuth.getCurrentUser()).getEmail()); // again, can't be null...
     }
 
-    // remove room only if not in game
+    /**
+     * Disconnect the user from the database. This removes the room only if the user is not in a game.
+     */
     public void disconnectUser() {
         if (isHost())
             if (!getIsInGame())
@@ -481,10 +510,12 @@ public class LobbyActivity extends AppCompatActivity {
 
     }
 
-    // create a room with your name (as host)
+    /**
+     * Create a room in the database, named playerName.
+     * This adds the fields "host" which saves the player's name, and "isInGame" which indicates if the room is taken (in a game)
+     */
     public void connectUser() {
         if (playerName != null) {
-            Log.d(TAG, "from connectUser: playerName = " + playerName);
             roomName = playerName;
             roomRef = fStore.collection(ROOMSPATH).document(roomName);
             Map<String, Object> userData = new HashMap<>();
@@ -496,7 +527,9 @@ public class LobbyActivity extends AppCompatActivity {
 
     }
 
-
+    /**
+     * When pressing the back button in the phone, the menu will collapse.
+     */
     @Override
     public void onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -504,6 +537,9 @@ public class LobbyActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * When the activity is in the "STOP" state (onStop() is called), do clean-ups by removing the listeners, as well as guest and host updates.
+     */
     @Override
     public void onStop() {
         if (roomListener != null)
@@ -522,8 +558,14 @@ public class LobbyActivity extends AppCompatActivity {
         super.onStop();
     }
 
+    /**
+     * When a application is being destroyed, unregister the broadcast listener and disconnect the user from the database.
+     * It is important to mention that this callback is not called always.
+     *
+     * @see <a href="https://stackoverflow.com/questions/4449955/activity-ondestroy-never-called"> onDestroy is never called </a>
+     */
     @Override
-    public void onDestroy() { // this is not always called!!!
+    public void onDestroy() {
         unregisterBroadcastListener();
         disconnectUser();
 

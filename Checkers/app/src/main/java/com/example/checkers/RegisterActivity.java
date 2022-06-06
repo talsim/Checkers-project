@@ -27,6 +27,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * This class contains helper functions for a database API.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class RegisterActivity extends AppCompatActivity {
     public static final String TAG = "Register";
     public TextView login;
@@ -44,14 +50,14 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        login = (TextView) findViewById(R.id.textViewLogin);
-        register = (Button) findViewById(R.id.ButtonRegister);
-        mEmail = (EditText) findViewById(R.id.editTextEmail);
-        mPassword = (EditText) findViewById(R.id.editTextPassword);
-        mConfirmPassword = (EditText) findViewById(R.id.editTextConfirmPassword);
-        mUsername = (EditText) findViewById(R.id.editTextName);
+        login = findViewById(R.id.textViewLogin);
+        register = findViewById(R.id.ButtonRegister);
+        mEmail = findViewById(R.id.editTextEmail);
+        mPassword = findViewById(R.id.editTextPassword);
+        mConfirmPassword = findViewById(R.id.editTextConfirmPassword);
+        mUsername = findViewById(R.id.editTextName);
 
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar = findViewById(R.id.progressBar);
         fAuth = FirebaseAuth.getInstance();
         fStore = FirebaseFirestore.getInstance();
 
@@ -72,7 +78,10 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    // handle the onClickListener for the button
+    /**
+     * Handle the register button press, and check if the user input is valid.
+     * If the input is valid then register, else show error on text boxes.
+     */
     public void registerHandler() {
         String email = mEmail.getText().toString().trim(); // remove spaces
         String password = mPassword.getText().toString().trim();
@@ -110,7 +119,11 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    // add username and email to db
+    /**
+     * Add username to the Firestore database to the "users" collection.
+     *
+     * @param username A String representation of the username field.
+     */
     public void addUserdataToCloud(String username) {
         // Create a new user with its username and email
         Map<String, Object> userData = new HashMap<>();
@@ -133,7 +146,13 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    // all validations
+    /**
+     * Check if user input in different fields such as email and password are valid or not (e.g password length must be atleast 6 characters).
+     *
+     * @param email    The string representation of the email entered.
+     * @param password The string representation of the password entered.
+     * @return true if user input is OK, else otherwise.
+     */
     private boolean validateFields(String email, String password, String confirmPassword) {
         boolean isValid = true;
         if (email.isEmpty()) {

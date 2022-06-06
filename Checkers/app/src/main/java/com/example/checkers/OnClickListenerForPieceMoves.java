@@ -1,19 +1,22 @@
 package com.example.checkers;
 
-import android.content.Context;
-import android.util.Log;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-
 import static com.example.checkers.DBUtils.getIsBlackTurn;
 import static com.example.checkers.DBUtils.isHost;
 import static com.example.checkers.LobbyActivity.roomRef;
 
+import android.content.Context;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.google.firebase.firestore.CollectionReference;
+
+/**
+ * This class implements an onClickListener and controls the movements of the pieces.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class OnClickListenerForPieceMoves implements View.OnClickListener {
 
     public static final String TAG = "MyListenerForPieceMoves";
@@ -34,11 +37,25 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
         lastUsedImageViews = new ImageView[10];
     }
 
+    /**
+     * A callback function for when a piece has been clicked on.
+     *
+     * @param v The view that has been clicked on.
+     */
     @Override
     public void onClick(View v) {
         displayMoveOptionsAndMove(this.piece.getX(), this.piece.getY(), this.piece.isBlack(), this.piece.isKing(), (ImageView) v);
     }
 
+    /**
+     * Handles the callback for when a piece has been clicked. It highlights the clicked piece and calls the move() functions accordingly to the piece type (King, Red or Black).
+     *
+     * @param x          The given x cord of the piece.
+     * @param y          The given y cord of the piece.
+     * @param isBlack    The color of the piece.
+     * @param isKing     A boolean indicating if the piece is a king piece or not.
+     * @param pieceImage The piece ImageView.
+     */
     public void displayMoveOptionsAndMove(int x, int y, boolean isBlack, boolean isKing, ImageView pieceImage) {
 
         appContext = pieceImage.getContext();
@@ -78,6 +95,13 @@ public class OnClickListenerForPieceMoves implements View.OnClickListener {
     }
 
 
+    /**
+     * Highlight the piece changing its ImageResource to a highlighted piece.
+     *
+     * @param isBlack The color of the piece.
+     * @param isKing  A boolean indicating if the piece is a king piece or not.
+     * @param piece   The piece ImageView to highlight.
+     */
     private void highlightPiece(boolean isBlack, boolean isKing, ImageView piece) {
         if (isBlack) {
             if (isKing) {

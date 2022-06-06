@@ -1,15 +1,18 @@
 package com.example.checkers;
 
-import android.util.Log;
-import android.widget.ImageView;
-
-import java.util.Objects;
-
-
+/**
+ * This class defines the board of the game.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class Board {
 
     public static final int SIZE = 8; // Board must be square-shaped (default is 8x8)
-    private Piece[][] boardArray; // 2d board
+    /**
+     * The actual board that is a 2D array of Piece object.
+     */
+    private Piece[][] boardArray; // 2D board
 
     public Board() {
         this.boardArray = new Piece[Board.SIZE][Board.SIZE];

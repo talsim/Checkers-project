@@ -25,6 +25,13 @@ public class MyBroadcastReceiver extends android.content.BroadcastReceiver {
         this.appContext = appContext;
     }
 
+    /**
+     * A callback function for network changes.
+     * Check if the phone is connected to the internet, and if it's not connected, then show a Toast and stop listening to new players joining the server.
+     *
+     * @param context The context of the activity.
+     * @param intent  The intent object used.
+     */
     @Override
     public void onReceive(Context context, Intent intent) {
         // an Intent broadcast.
@@ -37,6 +44,12 @@ public class MyBroadcastReceiver extends android.content.BroadcastReceiver {
 
     }
 
+    /**
+     * Check if there is an internet connection or not.
+     *
+     * @param context The context of the activity.
+     * @return true if there is an internet connection, false otherwise.
+     */
     public boolean isOnline(Context context) {
 
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

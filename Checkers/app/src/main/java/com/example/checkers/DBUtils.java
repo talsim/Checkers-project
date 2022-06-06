@@ -4,15 +4,14 @@ package com.example.checkers;
 import static com.example.checkers.GameActivity.gameOverListener;
 import static com.example.checkers.GameActivity.guestMovesUpdatesListener;
 import static com.example.checkers.GameActivity.hostMovesUpdatesListener;
-import static com.example.checkers.LobbyActivity.roomListener;
-import static com.example.checkers.LobbyActivity.roomRef;
-import static com.example.checkers.OnClickListenerForPieceMoves.TAG;
-import static com.example.checkers.OnClickListenerForPieceMoves.appContext;
-import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
 import static com.example.checkers.LobbyActivity.ROOMSPATH;
 import static com.example.checkers.LobbyActivity.playerName;
+import static com.example.checkers.LobbyActivity.roomListener;
 import static com.example.checkers.LobbyActivity.roomName;
+import static com.example.checkers.LobbyActivity.roomRef;
 import static com.example.checkers.LobbyActivity.roomsUpdaterViewListener;
+import static com.example.checkers.OnClickListenerForPieceMoves.appContext;
+import static com.example.checkers.OnClickListenerForPieceMoves.gameplayRef;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -44,13 +43,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class contains static helper functions for a database API.
+ *
+ * @author Tal Simhayev
+ * @version 1.0
+ */
 public class DBUtils {
     public static final String TAG = "DatabaseUtils";
 
     /**
      * wrapper function for update and set functions in the Firebase API.
-     * @param data      The data to be uploaded to the database - type of a Map
-     * @param docRef    The Document Reference to the location of the uploaded data.
+     *
+     * @param data   The data to be uploaded to the database - type of a Map
+     * @param docRef The Document Reference to the location of the uploaded data.
      */
     public static void addDataToDatabase(Map<String, Object> data, DocumentReference docRef) {
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -72,7 +78,8 @@ public class DBUtils {
 
     /**
      * Checks if local playerName is equal to the host name. This is done by comparing playerName and roomName.
-     * @return  True if the player is the host of the room.
+     *
+     * @return True if the player is the host of the room.
      */
     public static boolean isHost() {
         return playerName.equals(roomName);
@@ -80,8 +87,9 @@ public class DBUtils {
 
     /**
      * Checks if the winner is the current player. This is done by comparing playerName and nameOfWinner.
-     * @param nameOfWinner  The name of the winner.
-     * @return              True if playerName is the winner of the game, else otherwise.
+     *
+     * @param nameOfWinner The name of the winner.
+     * @return True if playerName is the winner of the game, else otherwise.
      */
     public static boolean isWinner(String nameOfWinner) {
         return playerName.equals(nameOfWinner);
@@ -89,7 +97,8 @@ public class DBUtils {
 
     /**
      * Gets the "guest" field in the database which is saved in the current room (pointed by roomRef). returns "*GUEST*" if it couldn't retrieve the field (almost never happens).
-     * @return  The field "guest", which is saved in the database in roomRef location (as a String).
+     *
+     * @return The field "guest", which is saved in the database in roomRef location (as a String).
      */
     public static String getGuestUsername() {
         Task<DocumentSnapshot> getGuest = roomRef.get();
@@ -107,8 +116,9 @@ public class DBUtils {
 
     /**
      * Uploads the given blackTurn parameter to the location pointed by gameplayRef.
-     * @param blackTurn     The current turn to update in the database.
-     * @param gameplayRef   The Document Reference to the location where the field "isBlackTurn" is at.
+     *
+     * @param blackTurn   The current turn to update in the database.
+     * @param gameplayRef The Document Reference to the location where the field "isBlackTurn" is at.
      */
     public static void updateBlackTurnInDb(boolean blackTurn, CollectionReference gameplayRef) {
         Map<String, Object> gameUpdates = new HashMap<>();
@@ -118,13 +128,14 @@ public class DBUtils {
 
     /**
      * Uploads the piece location based on the format:
-     *  Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump     |
-     *  Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False  |
-     * @param move      The Move object that represents the move that was made.
-     * @param isJump    A boolean indicating if a jump has occurred.
-     * @param jumpX     If there was a jump (based on isJump), this will contain the X cord of it.
-     * @param jumpY     If there was a jump (based on isJump), this will contain the Y cord of it.
-     * @param isKing    A boolean indicating whether this piece is a king piece or not.
+     * Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump     |
+     * Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False  |
+     *
+     * @param move   The Move object that represents the move that was made.
+     * @param isJump A boolean indicating if a jump has occurred.
+     * @param jumpX  If there was a jump (based on isJump), this will contain the X cord of it.
+     * @param jumpY  If there was a jump (based on isJump), this will contain the Y cord of it.
+     * @param isKing A boolean indicating whether this piece is a king piece or not.
      */
     public static void uploadPieceLocationToDb(Move move, boolean isJump, int jumpX, int jumpY, boolean isKing) {
         DocumentReference documentReference;
@@ -146,9 +157,10 @@ public class DBUtils {
 
     /**
      * Updates the list view when a player joins the server.
-     * @param roomsList     A reference to the roomsList object in Lobby activity.
-     * @param listView      A reference to the listView object in Lobby activity.
-     * @param appContext    The Application Context.
+     *
+     * @param roomsList  A reference to the roomsList object in Lobby activity.
+     * @param listView   A reference to the listView object in Lobby activity.
+     * @param appContext The Application Context.
      */
     public static void updateListview(ArrayList<String> roomsList, ListView listView, Context appContext) {
         CollectionReference roomsRef = FirebaseFirestore.getInstance().collection(ROOMSPATH);
@@ -175,7 +187,8 @@ public class DBUtils {
     /**
      * Deletes all documents in a given collection location.
      * This is done by looping through the entire collection and removing each document by getting its reference.
-     * @param collectionReference  The Reference to the collection to be deleted.
+     *
+     * @param collectionReference The Reference to the collection to be deleted.
      */
     public static void deleteAllDocumentsInCollection(CollectionReference collectionReference) {
         collectionReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -198,8 +211,9 @@ public class DBUtils {
     /**
      * Checks if the game is over by one of the following conditions:
      * if a player either has no more checkers or cannot make a move on their turn.
-     * @param board         The Board object that contains the current state of the game.
-     * @param isBlackTurn   A boolean indicating the current turn.
+     *
+     * @param board       The Board object that contains the current state of the game.
+     * @param isBlackTurn A boolean indicating the current turn.
      */
     public static void checkGameOver(Board board, boolean isBlackTurn) {
         int redPieces = 0;
@@ -245,7 +259,7 @@ public class DBUtils {
      * 2) The loser does all his clean-ups (such as setting the roomRef variable and changing roomName), and then uploads "finish" to gameUpdates location.
      * 3) The winner gets the "finish" message from the loser and then removes the room completely (by calling deleteAllDocumentsInCollection())
      *
-     * @param didBlackWin  A boolean indicating the winner of the game.
+     * @param didBlackWin A boolean indicating the winner of the game.
      */
     public static void gameOver(boolean didBlackWin) {
 
@@ -320,8 +334,9 @@ public class DBUtils {
 
     /**
      * Listens for "finish" field in gameUpdates location, and removes the room when receives it.
-     * @param gameUpdates   The Document Reference to the gameUpdates location in the database.
-     * @param roomNameBak   The backup String of the original roomName variable (useful when the guest is the winner).
+     *
+     * @param gameUpdates The Document Reference to the gameUpdates location in the database.
+     * @param roomNameBak The backup String of the original roomName variable (useful when the guest is the winner).
      */
     private static void listenForFinishMessage(DocumentReference gameUpdates, String roomNameBak) {
 
@@ -341,8 +356,9 @@ public class DBUtils {
 
     /**
      * Removes the room completely if snapshot contains the "finish" field.
-     * @param roomNameBak   The backup String of the original roomName variable (useful when the guest is the winner).
-     * @param snapshot      The DocumentSnapshot object that might contain the "finish" message, which we got in the onEvent in listenForFinishMessage().
+     *
+     * @param roomNameBak The backup String of the original roomName variable (useful when the guest is the winner).
+     * @param snapshot    The DocumentSnapshot object that might contain the "finish" message, which we got in the onEvent in listenForFinishMessage().
      */
     private static void removeRoom(String roomNameBak, DocumentSnapshot snapshot) {
         Boolean isFinish = (Boolean) snapshot.get("finish");
@@ -360,7 +376,8 @@ public class DBUtils {
 
     /**
      * Gets the "isBlackTurn" field in the gameUpdates location pointed by gameplayRef.
-     * @return  The value of isBlackTurn in the database (a Boolean variable)
+     *
+     * @return The value of isBlackTurn in the database (a Boolean variable)
      */
     public static boolean getIsBlackTurn() {
         Task<DocumentSnapshot> getTurn = gameplayRef.document("gameUpdates").get();
