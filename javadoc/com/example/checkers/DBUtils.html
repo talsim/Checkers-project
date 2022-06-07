@@ -201,7 +201,7 @@ extends java.lang.Object</pre>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#addDataToDatabase(java.util.Map,com.google.firebase.firestore.DocumentReference)">addDataToDatabase</a></span>&#8203;(java.util.Map&lt;java.lang.String,&#8203;java.lang.Object&gt;&nbsp;data,
                  com.google.firebase.firestore.DocumentReference&nbsp;docRef)</code></th>
 <td class="colLast">
-<div class="block">wrapper function for update and set functions in the Firebase API.</div>
+<div class="block">wrapper function for update and set functions in the Firestore API.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
@@ -257,8 +257,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>static void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#updateBlackTurnInDb(boolean,com.google.firebase.firestore.CollectionReference)">updateBlackTurnInDb</a></span>&#8203;(boolean&nbsp;blackTurn,
-                   com.google.firebase.firestore.CollectionReference&nbsp;gameplayRef)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#updateBlackTurnInDb(boolean)">updateBlackTurnInDb</a></span>&#8203;(boolean&nbsp;blackTurn)</code></th>
 <td class="colLast">
 <div class="block">Uploads the given blackTurn parameter to the location pointed by gameplayRef.</div>
 </td>
@@ -281,8 +280,8 @@ extends java.lang.Object</pre>
                        boolean&nbsp;isKing)</code></th>
 <td class="colLast">
 <div class="block">Uploads the piece location based on the format:
- Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump     |
- Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False  |</div>
+ Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump      -----     jumpedAxis |
+ Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False   -----       "X-Y"    |</div>
 </td>
 </tr>
 </table>
@@ -359,7 +358,7 @@ extends java.lang.Object</pre>
 <h4>addDataToDatabase</h4>
 <pre class="methodSignature">public static&nbsp;void&nbsp;addDataToDatabase&#8203;(java.util.Map&lt;java.lang.String,&#8203;java.lang.Object&gt;&nbsp;data,
                                      com.google.firebase.firestore.DocumentReference&nbsp;docRef)</pre>
-<div class="block">wrapper function for update and set functions in the Firebase API.</div>
+<div class="block">wrapper function for update and set functions in the Firestore API.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>data</code> - The data to be uploaded to the database - type of a Map</dd>
@@ -411,19 +410,17 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a id="updateBlackTurnInDb(boolean,com.google.firebase.firestore.CollectionReference)">
+<a id="updateBlackTurnInDb(boolean)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>updateBlackTurnInDb</h4>
-<pre class="methodSignature">public static&nbsp;void&nbsp;updateBlackTurnInDb&#8203;(boolean&nbsp;blackTurn,
-                                       com.google.firebase.firestore.CollectionReference&nbsp;gameplayRef)</pre>
+<pre class="methodSignature">public static&nbsp;void&nbsp;updateBlackTurnInDb&#8203;(boolean&nbsp;blackTurn)</pre>
 <div class="block">Uploads the given blackTurn parameter to the location pointed by gameplayRef.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>blackTurn</code> - The current turn to update in the database.</dd>
-<dd><code>gameplayRef</code> - The Document Reference to the location where the field "isBlackTurn" is at.</dd>
 </dl>
 </li>
 </ul>
@@ -439,8 +436,8 @@ extends java.lang.Object</pre>
                                            int&nbsp;jumpY,
                                            boolean&nbsp;isKing)</pre>
 <div class="block">Uploads the piece location based on the format:
- Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump     |
- Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False  |</div>
+ Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump      -----     jumpedAxis |
+ Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False   -----       "X-Y"    |</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>move</code> - The Move object that represents the move that was made.</dd>

@@ -97,7 +97,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dl>
 <dt><span class="memberNameLink"><a href="com/example/checkers/DBUtils.html#addDataToDatabase(java.util.Map,com.google.firebase.firestore.DocumentReference)">addDataToDatabase(Map&lt;String, Object&gt;, DocumentReference)</a></span> - Static method in class com.example.checkers.<a href="com/example/checkers/DBUtils.html" title="class in com.example.checkers">DBUtils</a></dt>
 <dd>
-<div class="block">wrapper function for update and set functions in the Firebase API.</div>
+<div class="block">wrapper function for update and set functions in the Firestore API.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/example/checkers/RegisterActivity.html#addUserdataToCloud(java.lang.String)">addUserdataToCloud(String)</a></span> - Method in class com.example.checkers.<a href="com/example/checkers/RegisterActivity.html" title="class in com.example.checkers">RegisterActivity</a></dt>
 <dd>
@@ -664,7 +664,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Responsible for removing the setOnClickListeners that we set and the player did not choose to go, so there will not be hanging listeners.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="com/example/checkers/DBUtils.html#updateBlackTurnInDb(boolean,com.google.firebase.firestore.CollectionReference)">updateBlackTurnInDb(boolean, CollectionReference)</a></span> - Static method in class com.example.checkers.<a href="com/example/checkers/DBUtils.html" title="class in com.example.checkers">DBUtils</a></dt>
+<dt><span class="memberNameLink"><a href="com/example/checkers/DBUtils.html#updateBlackTurnInDb(boolean)">updateBlackTurnInDb(boolean)</a></span> - Static method in class com.example.checkers.<a href="com/example/checkers/DBUtils.html" title="class in com.example.checkers">DBUtils</a></dt>
 <dd>
 <div class="block">Uploads the given blackTurn parameter to the location pointed by gameplayRef.</div>
 </dd>
@@ -691,8 +691,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><span class="memberNameLink"><a href="com/example/checkers/DBUtils.html#uploadPieceLocationToDb(com.example.checkers.Move,boolean,int,int,boolean)">uploadPieceLocationToDb(Move, boolean, int, int, boolean)</a></span> - Static method in class com.example.checkers.<a href="com/example/checkers/DBUtils.html" title="class in com.example.checkers">DBUtils</a></dt>
 <dd>
 <div class="block">Uploads the piece location based on the format:
- Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump     |
- Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False  |</div>
+ Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump      -----     jumpedAxis |
+ Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False   -----       "X-Y"    |</div>
 </dd>
 </dl>
 <a id="I:X">

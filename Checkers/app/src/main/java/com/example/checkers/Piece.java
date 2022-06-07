@@ -43,6 +43,7 @@ public class Piece {
 
     /**
      * Check if the piece can be moved or not.
+     * This function is overridden by all the subclasses of Piece, because their canMove() is specific to each subclass.
      *
      * @param board The Board object that holds the current state of the game.
      * @return true if the piece can move, false otherwise.
@@ -107,7 +108,7 @@ public class Piece {
                 });
 
                 // updating next turn - passing the turn to the other player
-                updateBlackTurnInDb(!isBlack, gameplayRef);
+                updateBlackTurnInDb(!isBlack);
                 currentTurn.setText(R.string.not_your_turn);
 
                 // upload new piece location to db
@@ -169,7 +170,7 @@ public class Piece {
                 });
 
                 // updating next turn - passing the turn to the other player
-                updateBlackTurnInDb(!isBlack, gameplayRef);
+                updateBlackTurnInDb(!isBlack);
                 currentTurn.setText(R.string.not_your_turn);
 
                 // upload new piece location to db

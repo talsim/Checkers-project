@@ -93,7 +93,7 @@ public class KingPiece extends Piece {
         }
 
 
-        // JUMPS - CHECKS
+        // JUMP - CHECKS
 
 
         /* -------------------------- left-JUMP diagonal BLACK -------------------------- */

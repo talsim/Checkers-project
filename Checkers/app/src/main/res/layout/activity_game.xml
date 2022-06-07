@@ -1049,8 +1049,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:textColor="@color/lightwhite"
-        android:textSize="20sp"
-         />
+        android:textSize="20sp" />
 
     <Button
         android:id="@+id/forfeit_button"
@@ -1061,6 +1060,7 @@
         android:layout_marginBottom="50dp"
         android:gravity="center_horizontal|center_vertical"
         android:text="Forfeit"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        android:visibility="invisible" />
 
 </LinearLayout>

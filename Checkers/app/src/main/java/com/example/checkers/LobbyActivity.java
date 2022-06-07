@@ -495,8 +495,7 @@ public class LobbyActivity extends AppCompatActivity {
      */
     public void disconnectUser() {
         if (isHost())
-            if (!getIsInGame())
-                roomRef.delete();
+            roomRef.delete();
 
     }
 

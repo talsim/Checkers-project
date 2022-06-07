@@ -53,7 +53,7 @@ public class DBUtils {
     public static final String TAG = "DatabaseUtils";
 
     /**
-     * wrapper function for update and set functions in the Firebase API.
+     * wrapper function for update and set functions in the Firestore API.
      *
      * @param data   The data to be uploaded to the database - type of a Map
      * @param docRef The Document Reference to the location of the uploaded data.
@@ -117,10 +117,9 @@ public class DBUtils {
     /**
      * Uploads the given blackTurn parameter to the location pointed by gameplayRef.
      *
-     * @param blackTurn   The current turn to update in the database.
-     * @param gameplayRef The Document Reference to the location where the field "isBlackTurn" is at.
+     * @param blackTurn The current turn to update in the database.
      */
-    public static void updateBlackTurnInDb(boolean blackTurn, CollectionReference gameplayRef) {
+    public static void updateBlackTurnInDb(boolean blackTurn) {
         Map<String, Object> gameUpdates = new HashMap<>();
         gameUpdates.put("isBlackTurn", blackTurn);
         addDataToDatabase(gameUpdates, gameplayRef.document("gameUpdates"));
@@ -128,8 +127,8 @@ public class DBUtils {
 
     /**
      * Uploads the piece location based on the format:
-     * Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump     |
-     * Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False  |
+     * Name    | startAxis  -----   endAxis   -----     isKing     -----     isJump      -----     jumpedAxis |
+     * Value   |   "X-Y"    -----    "X-Y"    -----    True/False  -----    True/False   -----       "X-Y"    |
      *
      * @param move   The Move object that represents the move that was made.
      * @param isJump A boolean indicating if a jump has occurred.

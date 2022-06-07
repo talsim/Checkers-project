@@ -446,7 +446,8 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>canMove</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;canMove&#8203;(<a href="Board.html" title="class in com.example.checkers">Board</a>&nbsp;board)</pre>
-<div class="block">Check if the piece can be moved or not.</div>
+<div class="block">Check if the piece can be moved or not.
+ This function is overridden by all the subclasses of Piece, because their canMove() is specific to each subclass.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>board</code> - The Board object that holds the current state of the game.</dd>

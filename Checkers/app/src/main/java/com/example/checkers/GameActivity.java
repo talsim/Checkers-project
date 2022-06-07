@@ -108,7 +108,6 @@ public class GameActivity extends AppCompatActivity {
                     board.getBoardArray()[x][y] = new RedPiece(x, y, currentTurn);
                 }
 
-
                 // black pieces
                 if (x >= 5 && Logic.isTileForChecker(x, y)) {
                     imageViewsTiles[x][y].setImageResource(R.drawable.black_piece);
@@ -196,7 +195,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     /**
-     * Init every imageview from the xml, to move the pieces around the bard.
+     * Init every imageview from the xml, to move the pieces around the board.
      */
     private void initImageViews() {
 
@@ -243,7 +242,7 @@ public class GameActivity extends AppCompatActivity {
      * When the activity is in the "STOP" state (onStop() is called), do clean-ups by removing the gameOverListener, as well as host and guest moves listener.
      */
     @Override
-    protected void onStop() {
+    public void onStop() {
         if (gameOverListener != null)
             gameOverListener.remove();
         if (hostMovesUpdatesListener != null)
