@@ -8,6 +8,8 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 /**
  * This class manages the MainActivity in the application.
@@ -29,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // disable Firestore cache
+        FirebaseFirestore.getInstance().setFirestoreSettings(removeFirestorePersistence());
 
         if (FirebaseAuth.getInstance().getCurrentUser() != null) // if user already logged in
         {
@@ -54,5 +59,16 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    /**
+     * Remove the Firestore persistence, thus disabling getting data from cache (because we need realtime updates during a game).
+     *
+     * @return The FirebaseFirestoreSettings object, to change the Firestore settings and disable cache.
+     */
+    public FirebaseFirestoreSettings removeFirestorePersistence() {
+        return new FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(false)
+                .build();
     }
 }

@@ -93,7 +93,7 @@ public class LobbyActivity extends AppCompatActivity {
         fStore = FirebaseFirestore.getInstance();
         broadcastReceiver = new MyBroadcastReceiver(roomsList, listView, getApplicationContext());
         registerBroadcastListener();
-        removeFirestorePersistence();
+
 
         initNavHeader();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -116,16 +116,6 @@ public class LobbyActivity extends AppCompatActivity {
         });
 
         updateListview(roomsList, listView, getApplicationContext());
-    }
-
-    /**
-     * Remove the Firestore persistence, thus disabling getting data from cache (because we need realtime updates during a game).
-     */
-    public void removeFirestorePersistence() {
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setPersistenceEnabled(false)
-                .build();
-        fStore.setFirestoreSettings(settings);
     }
 
 
