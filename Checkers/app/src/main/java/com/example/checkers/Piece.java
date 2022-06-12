@@ -17,7 +17,7 @@ import android.widget.TextView;
  * @author Tal Simhayev
  * @version 1.0
  */
-public class Piece {
+public abstract class Piece {
 
     protected int x;
     protected int y;
@@ -48,14 +48,7 @@ public class Piece {
      * @param board The Board object that holds the current state of the game.
      * @return true if the piece can move, false otherwise.
      */
-    public boolean canMove(Board board) {
-        if (this.isKing) // if King piece : can king move?
-            return ((KingPiece) this).canMove(board);
-        else if (this.isBlack) // else if Black piece : can black move?
-            return ((BlackPiece) this).canMove(board);
-        else // else Red piece : can red move?
-            return ((RedPiece) this).canMove(board);
-    }
+    public abstract boolean canMove(Board board);
 
     /**
      * Show a right diagonal move, and do it if the user wishes to.
@@ -189,9 +182,7 @@ public class Piece {
      * @param endX  The end x cord of the move.
      * @param endY  The end y cord of the move.
      */
-    protected void updateBoardArray(Board board, int endX, int endY) {
-        board.getBoardArray()[endX][endY] = new Piece(endX, endY, isBlack, currentTurn);
-    }
+    protected abstract void updateBoardArray(Board board, int endX, int endY);
 
 
     /**
