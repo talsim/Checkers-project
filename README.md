@@ -1,4 +1,4 @@
-# final-project-highschool
+# Checkers Project - Computer Science
 My final project in Computer Science at Rogozin High School (10 units in total in Computer Science)
 
 ## Screenshots
